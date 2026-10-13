@@ -31,6 +31,8 @@ export type Env = {
   /** /homelab: the Monitoring API (https; contract in MONITORING_API.md) and its bearer token (secret). Unset: demo data. */
   MONITORING_API_URL?: string;
   MONITORING_API_TOKEN?: string;
+  /** Umami website ID (public, a UUID) from analytics.huismax.com. Unset: no analytics on the pages. */
+  UMAMI_WEBSITE_ID?: string;
   /** Test overrides; leave unset in production. */
   SPOTIFY_ACCOUNTS_BASE?: string;
   SPOTIFY_API_BASE?: string;

@@ -1,5 +1,6 @@
 import { $ } from '../lib/dom';
 import type { PageInit } from '../main';
+import { track } from '../lib/track';
 
 /**
  * /dj requests: posts the form as JSON (POST /api/dj/requests). The text stays put on any error and is cleared only
@@ -56,6 +57,7 @@ export function initRequests(main: HTMLElement, scope: Parameters<PageInit>[1]) 
       if (res.ok && out.ok) {
         input.value = '';
         say('got it. the ones i pick show up on the list.', 'ok');
+        track('dj-request-sent');
       } else {
         say(out.error || 'could not send. try again in a bit.', 'error');
       }

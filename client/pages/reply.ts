@@ -1,5 +1,6 @@
 import { $ } from '../lib/dom';
 import type { PageInit } from '../main';
+import { track } from '../lib/track';
 
 /** /reply: posts the form as JSON. The text stays put on any error and is cleared only once it has been sent. */
 export const initReply: PageInit = (main, scope) => {
@@ -66,6 +67,7 @@ export const initReply: PageInit = (main, scope) => {
         form.reset();
         counter();
         say('sent. thank you.', 'ok');
+        track('reply-sent');
       } else {
         say(out.error || 'could not send. try again in a bit.', 'error');
       }
