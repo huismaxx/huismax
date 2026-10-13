@@ -34,32 +34,42 @@ Rules:
 
 ## Analytics (Umami)
 
-Status: **planned**, waiting on a website ID (see open requests).
+Status: **built, waiting on the website ID.** Until `UMAMI_WEBSITE_ID` is set, pages carry no analytics.
 
-- The script loads in `src/views/layout.tsx` with `defer` and `data-domains="huismax.com"`, so local dev and branch previews aren't counted. It is only added when `UMAMI_WEBSITE_ID` is set.
-- The router (`client/lib/router.ts`) navigates with `pushState`, and Umami counts those page views on its own. Check that the title it records is the new page's title, not the old one.
-- Events go through one typed helper (`client/lib/track.ts`), so the event names live in one place. When Umami is missing it does nothing.
-- Referrers and `utm_*` are recorded by Umami automatically, so there's no extra code for campaigns.
-- Use kebab-case names and small properties. Never send message text, names or emails.
-
-Events worth tracking. Keep the list short; each one should answer a real question.
+- `src/views/layout.tsx` adds `https://analytics.huismax.com/script.js` (`defer`, `data-domains="huismax.com"`) only when `UMAMI_WEBSITE_ID` (a UUID, in `wrangler.jsonc` `vars`) is set. So local dev and branch previews (which get no vars) aren't counted. The ID is public; commit it in `wrangler.jsonc`, since a value there overrides one set in the dashboard on every deploy.
+- Umami counts page views itself, router navigations included (it follows `pushState`). It also records referrers and `utm_*`, so campaign links need no code.
+- All events go through `client/lib/track.ts`: `track(name, props)` for code, `data-track="name"` plus `data-track-*` properties on links. Any other link to another site sends `outbound` {host}. Without Umami, every call does nothing.
+- Add an event only when it answers a real question. Add it to `TrackEvent` and to this table. Use kebab-case names and small properties. Never send message text, names or emails.
 
 | Event | Where | Why |
 |---|---|---|
-| `muse-download` {version} | /muse download button | The main product conversion |
-| `muse-source` | /muse GitHub link | Interest from developers |
+| `muse-download` {version, from: top/step/end} | /muse download links | The main product conversion, and which button works |
+| `muse-source` | /muse GitHub links | Interest from developers |
 | `muse-board` {board} | /muse Amazon board links | Which hardware people buy |
 | `reply-sent` | /reply, on success only | Contact conversion |
 | `dj-request-sent` | /dj, on success only | Engagement with the channel |
 | `chat-start` | first message of a chat session | Demand for chat or support |
-| `listen-live` | any `[data-listen-live]` / play live | Audience for live sets |
-| `outbound` {label} | footer and profile links | Where visitors go next |
+| `listen-live` | starting the live stream (any button) | Audience for live sets |
+| `outbound` {host} | any other external link | Where visitors go next |
 
-Not tracked: hovers, scroll depth, palette or menu opens, theme toggles, every chat message, or anything on /admin.
+Not tracked: hovers, scroll depth, palette or menu opens, theme toggles, every chat message, or anything on /admin (it has its own layout, without the script).
+
+Worth setting up in Umami later (server side): goals or funnels for /muse → `muse-download`, and /reply → `reply-sent`.
 
 ## Support chat (Chatwoot)
 
-Status: **needs Max's decision.** The header's "live chat" button opens the site's own chat panel (`client/lib/chat.ts`), which talks to the OpenClaw `website` agent through `bridge/`. Recommended direction: Chatwoot becomes the inbox and conversation layer, and OpenClaw answers inside it as a Chatwoot Agent Bot, wired up on the server or through n8n, with a human able to take over. The site keeps its own button and panel styling and opens the Chatwoot widget with its launcher hidden (`hideMessageBubble`), so it doesn't look like a generic widget. Once that works, the custom bridge can be retired.
+**OpenClaw is deprecated.** It is not part of the architecture. Don't build anything on it, and don't treat it as the AI backend.
+
+The current "live chat" (`client/lib/chat.ts`, `client/lib/assistant-api.ts`, `src/lib/chat.ts`, `/api/chat`, `bridge/`, `CHAT_BRIDGE_URL` / `CHAT_BRIDGE_SECRET`) is **legacy**. It stays until Chatwoot replaces it, then it gets removed. Don't add features to it.
+
+Plan:
+1. Chatwoot is the conversation and support platform: a Website inbox on chat.huismax.com, with Max (and later others) answering from Chatwoot.
+2. The site keeps its own header "live chat" button and look. It loads the Chatwoot SDK lazily (on the first click, or when idle), sets `hideMessageBubble: true` so Chatwoot's launcher never shows, and opens the widget with `$chatwoot.toggle('open')`. The widget's colour, position and greeting follow huismax (dark/light, Geist).
+3. Human takeover is how Chatwoot works anyway. When an AI responder comes, it is an Agent Bot that hands the conversation to a person (status → open) whenever it should.
+4. Later: an AI responder through n8n (Chatwoot webhook → n8n → a current AI backend → reply through the Chatwoot API), set up by Server Claude.
+5. Once Chatwoot works on the site, remove the legacy chat code, `/api/chat`, `bridge/` and its env vars, and ask Server Claude to retire the bridge service and its tunnel route.
+
+Public config: `CHATWOOT_WEBSITE_TOKEN` in `wrangler.jsonc` `vars` (the base URL is `https://chat.huismax.com`). `chat-start` keeps meaning "a visitor started a conversation".
 
 ## Marketing (Mautic)
 
@@ -67,5 +77,5 @@ Nothing feeds Mautic yet, and /reply messages and DJ requests are personal messa
 
 ## Open server requests
 
-- Umami: create the huismax.com website and send back its website ID. Confirm `https://analytics.huismax.com/script.js` is publicly reachable.
-- Chatwoot: on hold until the chat decision. Then a Website inbox and its website token.
+- Umami: create the huismax.com website, send back its ID, and confirm the script and collect endpoint are public (sent).
+- Chatwoot: a Website inbox for huismax.com, its website token, the allowed domain, and confirmation that the SDK and widget can be embedded (sent).

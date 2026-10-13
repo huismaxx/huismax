@@ -141,7 +141,13 @@ The server data comes from the Huismax Monitoring API, `MONITORING_API_URL` = `h
 - `GET /api/homelab`, `GET /api/homelab/<id>/history?range=1h|24h|7d` and `GET /api/homelab/services` are what the page polls. They return 404 while the page is hidden in /admin.
 - The homepage's `homelab_` card is the physical server as a whole (hardware, overall CPU / RAM / disk, uptime), from `GET /api/homelab/host` (the API's `/v1/host`). It stays hidden while there's no host to show.
 
+## Analytics
+
+Umami at analytics.huismax.com, without cookies. Set `UMAMI_WEBSITE_ID` in `wrangler.jsonc` `vars` to the huismax.com website's ID. Until then, pages load no analytics. Events are sent from `client/lib/track.ts`, and the list of events is in CLAUDE.md.
+
 ## Live chat
+
+> **Legacy.** OpenClaw is deprecated, and this chat will be replaced by Chatwoot (chat.huismax.com) and then removed. See CLAUDE.md. Don't build on it.
 
 Max's AI Assistant is an OpenClaw agent (`openclaw/website`) on Max's own server. The browser only ever talks to this site:
 

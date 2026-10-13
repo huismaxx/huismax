@@ -64,7 +64,7 @@ async function page(c: C, key: PageKey, title: string | undefined, body: (live: 
   if (cmsKey && !s.settings.pages[cmsKey] && !(await isAdmin(c))) return notFound(c);
   const description = (cmsKey && s.settings.intros[cmsKey]) || s.settings.description;
   return c.html(
-    <Layout page={key} title={title} description={description} live={live} site={s}>
+    <Layout page={key} title={title} description={description} live={live} site={s} analytics={c.env.UMAMI_WEBSITE_ID?.trim()}>
       {await body(live, s)}
     </Layout>,
     status,

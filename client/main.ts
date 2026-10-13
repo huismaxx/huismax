@@ -8,6 +8,7 @@ import { startPalette } from './lib/palette';
 import { startMenu } from './lib/menu';
 import { startChat } from './lib/chat';
 import { startAudioBar, playLive } from './lib/audiobar';
+import { startTracking } from './lib/track';
 import { initHome } from './pages/home';
 import { initAlbum } from './pages/album';
 import { initDJ } from './pages/dj';
@@ -55,6 +56,7 @@ startMenu(router.navigate);
 const chat = startChat();
 startAudioBar(router.navigate);
 startLivePolling();
+startTracking();
 
 // Any [data-listen-live] button on any page starts the live stream in the global player.
 document.addEventListener('click', (e) => {

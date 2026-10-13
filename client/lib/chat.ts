@@ -1,4 +1,5 @@
 import { $, readJSON } from './dom';
+import { track } from './track';
 import { format, type Block, type Inline, type LinkPolicy } from './chat-format';
 import { ERROR_TEXT, streamAssistantMessage, type HistoryItem, type Outcome } from './assistant-api';
 
@@ -237,6 +238,7 @@ export function startChat() {
     const question = raw.trim().slice(0, MAX_LEN);
     if (!question || controller) return; // one request at a time
     const history = historyOf(log);
+    if (!history.length) track('chat-start');
     input.value = '';
     fit();
     suggest.replaceChildren();

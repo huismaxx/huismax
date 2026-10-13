@@ -15,8 +15,14 @@ type Props = {
   description?: string;
   live: LiveStatus;
   site: Site;
+  /** Umami website ID (UMAMI_WEBSITE_ID). Unset: no analytics script at all. */
+  analytics?: string;
   children: Child;
 };
+
+const UMAMI_SCRIPT = 'https://analytics.huismax.com/script.js';
+// A UUID or nothing: the ID goes into the page as an attribute.
+const UMAMI_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Runs before paint so the stored theme never flashes.
 // Also marks the page as scripted, so the homepage headline can wait for its typewriter instead of flashing.
@@ -24,7 +30,7 @@ const themeBoot = `document.documentElement.classList.add('js');try{var t=localS
 
 const json = (v: unknown) => raw(JSON.stringify(v).replace(/</g, '\\u003c'));
 
-export const Layout = ({ page, title, description, live, site, children }: Props) => {
+export const Layout = ({ page, title, description, live, site, analytics, children }: Props) => {
   const s = site.settings;
   const fullTitle = title ? `${title} — huismax` : 'huismax';
   const desc = description || s.description || s.headline;
@@ -49,6 +55,8 @@ export const Layout = ({ page, title, description, live, site, children }: Props
         <link rel="stylesheet" href={assets.css} />
         <script>{raw(themeBoot)}</script>
         <script type="module" src={assets.js} />
+        {/* Umami: deferred, cookieless, only counted on huismax.com (not local dev). A blocked script changes nothing. */}
+        {analytics && UMAMI_ID.test(analytics) && <script defer src={UMAMI_SCRIPT} data-website-id={analytics} data-domains="huismax.com" />}
       </head>
       <body data-page={page}>
         <a class="skip" href="#main">skip to content</a>
