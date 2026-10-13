@@ -18,7 +18,7 @@ const MAX_LEN = 1000;
 const POLL = 10_000;
 const PRESENCE = 20_000;
 
-type Saved = { inbox: string; sourceId: string; pubsub: string; contactId: number; conversationId: number; seen: number };
+type Saved = { inbox: string; sourceId: string; pubsub: string; contactId: number; conversationId: number };
 export type Msg = { id: number | string; text: string; mine: boolean; at: number; pending?: boolean; failed?: boolean };
 
 const read = (inbox: string): Saved | null => {
@@ -188,7 +188,7 @@ export function startTalk(inbox: string, navigate: (href: string) => void) {
     if (saved) return;
     const c = (await api('/contacts', { method: 'POST', body: '{}' })) as { source_id: string; pubsub_token: string; id: number };
     const conv = (await api(`/contacts/${encodeURIComponent(c.source_id)}/conversations`, { method: 'POST', body: '{}' })) as { id: number };
-    saved = { inbox, sourceId: c.source_id, pubsub: c.pubsub_token, contactId: c.id, conversationId: conv.id, seen: Date.now() };
+    saved = { inbox, sourceId: c.source_id, pubsub: c.pubsub_token, contactId: c.id, conversationId: conv.id };
     write(saved);
     connect();
   }
@@ -206,7 +206,8 @@ export function startTalk(inbox: string, navigate: (href: string) => void) {
       await ensureConversation();
       const m = (await api(`${convo()}/messages`, { method: 'POST', body: JSON.stringify({ content: text, echo_id: echo }) })) as Record<string, unknown>;
       onMessage({ ...m, echo_id: echo });
-      if (first) track('chat-open');
+      // a visitor starting a conversation (the messages themselves are counted in Chatwoot)
+      if (first) track('chat-start');
     } catch {
       const i = msgs.findIndex((x) => x.id === echo);
       if (i >= 0) msgs[i] = { ...msgs[i], pending: false, failed: true };

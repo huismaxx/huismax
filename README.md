@@ -151,7 +151,7 @@ The homepage's `chat_` section is a live chat with Max in the site's own design 
 
 - The contact and conversation are created on the first message and kept in the browser (localStorage). The socket stays open while visitors browse; a reply on another page puts a red dot on the header's `chat` button, which leads back to `/#chat`.
 - If the socket can't connect, it polls every 10 s. A message that fails to send can be tapped to retry.
-- Without `CHATWOOT_INBOX_ID`, the chat buttons open Chatwoot's own widget (`client/lib/support.ts`, `CHATWOOT_WEBSITE_TOKEN`); with neither, they lead to `/reply`.
+- The header's `chat` is a plain link to `/#chat` (scripts make it scroll there and focus the box). Without `CHATWOOT_INBOX_ID` there is no chat_ section and it links to `/reply`.
 
 ## Tools
 

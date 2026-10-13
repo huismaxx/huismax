@@ -72,6 +72,9 @@ function containerTable(rows: (Container & { server?: string })[], withServer: b
   if (!rows.length) return h('p', { class: 'hl-empty mono' }, 'no containers.');
   const rank = (c: Container) => (c.health === 'unhealthy' || c.state === 'restarting' || c.state === 'dead' ? 0 : c.state === 'running' ? 1 : 2);
   const sorted = [...rows].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+  // columns only when they'd say something: one server needs no server column, an API without images no image column
+  const servers = withServer && new Set(rows.map((c) => c.server)).size > 1;
+  const images = rows.some((c) => c.image), statuses = rows.some((c) => c.status);
   const state = (c: Container) => {
     const bad = c.health === 'unhealthy' || c.state === 'restarting' || c.state === 'dead';
     const word = c.health === 'unhealthy' ? 'unhealthy' : c.state;
@@ -80,7 +83,21 @@ function containerTable(rows: (Container & { server?: string })[], withServer: b
   return h(
     'table',
     { class: 'hl-table' },
-    h('thead', null, h('tr', null, h('th', null, 'name'), withServer ? h('th', null, 'server') : null, h('th', { class: 'hl-col-image' }, 'image'), h('th', null, 'state'), h('th', { class: 'hl-num' }, 'cpu'), h('th', { class: 'hl-num' }, 'memory'), h('th', { class: 'hl-col-status' }, 'status'))),
+    h(
+      'thead',
+      null,
+      h(
+        'tr',
+        null,
+        h('th', null, 'name'),
+        servers ? h('th', null, 'server') : null,
+        images ? h('th', { class: 'hl-col-image' }, 'image') : null,
+        h('th', null, 'state'),
+        h('th', { class: 'hl-num' }, 'cpu'),
+        h('th', { class: 'hl-num' }, 'memory'),
+        statuses ? h('th', { class: 'hl-col-status' }, 'status') : null,
+      ),
+    ),
     h(
       'tbody',
       null,
@@ -89,12 +106,12 @@ function containerTable(rows: (Container & { server?: string })[], withServer: b
           'tr',
           null,
           h('td', { class: 'hl-cname' }, c.name),
-          withServer ? h('td', { class: 'mono' }, c.server ? h('a', { href: `/homelab/${c.server}` }, c.server) : '') : null,
-          h('td', { class: 'hl-col-image mono dim' }, c.image),
+          servers ? h('td', { class: 'mono' }, c.server ? h('a', { href: `/homelab/${c.server}` }, c.server) : '') : null,
+          images ? h('td', { class: 'hl-col-image mono dim' }, c.image) : null,
           h('td', null, state(c)),
           h('td', { class: 'hl-num mono' }, c.state === 'running' && c.cpu !== null ? `${c.cpu.toFixed(1)}%` : '—'),
           h('td', { class: 'hl-num mono' }, c.memory ? bytes(c.memory) : '—'),
-          h('td', { class: 'hl-col-status mono dim' }, c.status || '—'),
+          statuses ? h('td', { class: 'hl-col-status mono dim' }, c.status || '—') : null,
         ),
       ),
     ),
@@ -308,8 +325,10 @@ function detailPage(root: HTMLElement, id: string, scope: Scope) {
               ),
             ),
           )
-        : h('p', { class: 'hl-empty mono' }, 'no interfaces reported.'),
+        : '',
     );
+    // nothing to say about the network: the section goes, storage takes the row
+    ifaces.closest('section')!.hidden = !s.interfaces.length;
 
     ccount.textContent = s.containers.length ? `${running(s.containers)}/${s.containers.length}` : '';
     table.replaceChildren(containerTable(s.containers, false));

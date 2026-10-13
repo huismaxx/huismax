@@ -18,7 +18,7 @@ Verified against the production code on **2026-10-13**.
 
 | URL | Page | What it's for | Status |
 |---|---|---|---|
-| `/` | Home | "WHO IS MAX?" intro, Max's current status, what he's listening to, his identities, and entry points | LIVE |
+| `/` | Home | "WHO IS MAX?" intro, Max's status and what he's listening to, his identities, the home server, his projects, open tools anyone can use, and a live chat with Max | LIVE |
 | `/dj` | huismax dj channel | Max's DJ channel: live sets (when on air) and an archive of recorded sessions | PARTIAL (no sessions yet) |
 | `/music` | Music | Live Spotify listening (now playing with synced lyrics, recently played, on repeat) and Max's favourite artists | LIVE |
 | `/photographer` | Photographer | Max's photography gallery | PARTIAL (no photos yet) |
@@ -26,6 +26,8 @@ Verified against the production code on **2026-10-13**.
 | `/vibe-coder` | Vibe coder | Max's software projects, with status | LIVE |
 | `/now` | Now | What Max is doing, learning and building right now | LIVE |
 | `/reply` | Reply | The contact form for sending Max a private message | LIVE |
+| `/homelab` | Homelab | Max's home server live: overall status, CPU, memory, storage, network, containers, the self-hosted sites, and history charts on `/homelab/<server>` | LIVE |
+| `/muse` | Build your own Muse gadget | How to turn an ESP32 board into a Muse gadget with Max's open-source Muse Companion app, with the download | LIVE |
 | any unknown path | 404: "WHERE IS MAX?" | Shows the requested path and links to every open page | LIVE |
 
 **Redirects:** `/lab` goes to `/reply` and `/trail-runner` goes to `/hiking` (both permanent). `www.huismax.com` goes to `huismax.com`. A trailing slash is removed, so `/music/` becomes `/music`.
@@ -94,7 +96,7 @@ Verified against the production code on **2026-10-13**.
   - A row can have a small external link beside it. The Vibe coder row links to "Tapical ↗" at tapical.us.
   - Keyboard: ↑/↓ moves between rows and keys 1–9 jump to a row.
 - **Index (under the hero):**
-  - **now_:** status and Now items (links to `/now`).
+  - **now_:** what Max is building and learning (the Now items; links to `/now`). His status is the line under the headline.
   - **homelab_:** Max's physical home server as one machine: its hardware (CPU model and cores, memory, drives, network, OS) and live overall CPU (with the last hour as a line), RAM, disk use and uptime, refreshed about every 15 seconds (links to `/homelab`). It only appears when the server reports in.
   - **projects_:** Max's own projects with their status and a short note, each linking out (for example Tapical and the open-source Muse Companion).
 - **tools_** (full width): services on Max's server anyone can use, free and without an account, each with a live online/offline dot. Today: **video calls** (meet.huismax.com; **start a call** opens a fresh private room to share), a **whiteboard** (Excalidraw), **pdf tools** (Stirling-PDF, up to 50 MB), **private paste** (PrivateBin, encrypted, expires within a week) and **dev tools** (IT-Tools).
@@ -130,7 +132,7 @@ Verified against the production code on **2026-10-13**.
 - A session without audio has a disabled ▶ ("no audio yet").
 - Playback runs in the global player, so it continues while visitors browse. The bottom bar has the progress bar and seeking.
 - Possible errors: "could not load this mix", "playback blocked".
-- **Current content (snapshot):** the archive is empty. The page shows **"NO ARCHIVE YET · first transmission soon"** (COMING SOON).
+- **Current content (snapshot):** the archive is empty. The console says **"first transmission soon"** and the archive list is left out (COMING SOON).
 
 **Live sets · LIVE:**
 - Max streams from his own radio server. The site goes live **on its own** when he starts streaming and returns to normal when he stops, usually within 15–30 seconds, with no reload needed.
@@ -268,7 +270,7 @@ Use `/reply` for everything contact-related: collaborations, DJ bookings, photog
 | What visitors see | Reality |
 |---|---|
 | "NOT 1 … NOT 7" frames on Photographer or Hiking | Empty placeholders for future photos. Not clickable. |
-| DJ archive "NO ARCHIVE YET · first transmission soon" | No sessions published yet. |
+| DJ console "first transmission soon" | No sessions published yet. |
 | DJ "on air --:--:--" clock | Runs only while Max is live. |
 | "listen live" / LIVE badge / listener count | Appear only while Max is streaming. |
 | Small waveform bars beside each DJ session | Decorative, not the real audio waveform. |

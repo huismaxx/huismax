@@ -218,7 +218,7 @@ a.project-item:hover { padding-left: 6px; }
 }
 .presence-profile:hover, .presence-profile:focus-visible { background: var(--fg); border-color: var(--fg); color: var(--bg); }
 
-/* top of the homepage: opens the chat with Max (Chatwoot) */
+/* pill links: the hero's muse link, the tools' buttons */
 .home-chat {
   display: flex;
   width: fit-content;
@@ -234,7 +234,6 @@ a.project-item:hover { padding-left: 6px; }
   transition: background var(--fast), color var(--fast), border-color var(--fast);
 }
 .home-chat:hover, .home-chat:focus-visible, .home-chat[aria-expanded='true'] { background: var(--fg); border-color: var(--fg); color: var(--bg); }
-.home-chat-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 /* the chat and the perk side by side, wrapping on narrow screens */
 .home-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .home-actions .home-chat { margin-top: 0; }
@@ -266,7 +265,8 @@ a.project-item:hover { padding-left: 6px; }
 .tool-list { border-top: 1px solid var(--line-2); }
 .tool {
   display: grid;
-  grid-template-columns: 96px minmax(0, 0.7fr) minmax(0, 1.3fr) auto;
+  /* a fixed column for the button, so every description starts at the same place */
+  grid-template-columns: 88px minmax(0, 0.7fr) minmax(0, 1.3fr) 156px;
   align-items: center;
   gap: 16px;
   padding: 18px 0;
@@ -274,12 +274,12 @@ a.project-item:hover { padding-left: 6px; }
 }
 .tool-status { display: inline-flex; align-items: center; gap: 8px; font-size: var(--t-xs); color: var(--fg-3); }
 .tool-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line-2); }
-.tool[data-up='true'] .tool-dot { background: var(--fg); animation: blink 1.6s steps(1) infinite; }
+.tool[data-up='true'] .tool-dot { background: var(--fg); }
 .tool[data-up='true'] .tool-status { color: var(--fg-2); }
 .tool[data-up='false'] .tool-dot { background: var(--live); }
 .tool-name { font-size: clamp(20px, 2vw, 28px); letter-spacing: -0.03em; line-height: 1.1; }
 .tool-desc { font-size: var(--t-sm); line-height: 1.45; }
-.tool-go { margin: 0; white-space: nowrap; }
+.tool-go { margin: 0; justify-self: end; white-space: nowrap; }
 
 /* chat_: the conversation, in the site's black and white */
 .talk-status { display: inline-flex; align-items: center; gap: 8px; font-size: var(--t-xs); color: var(--fg-2); }
@@ -360,7 +360,7 @@ a.project-item:hover { padding-left: 6px; }
 
 @media (max-width: 960px) {
   .home-block { grid-template-columns: minmax(0, 1fr); }
-  .tool { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'name go' 'desc desc' 'status status'; row-gap: 8px; }
+  .tool { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'name go' 'status go' 'desc desc'; row-gap: 6px; }
   .tool-name { grid-area: name; }
   .tool-desc { grid-area: desc; }
   .tool-status { grid-area: status; }
@@ -370,7 +370,7 @@ a.project-item:hover { padding-left: 6px; }
   .home-block { padding: 32px 0 40px; }
   .talk { margin: 0 calc(var(--gutter) * -1); border-left: 0; border-right: 0; }
   .talk-empty { padding-left: 16px; }
-  .talk-log { max-height: 60vh; padding: 20px 16px; }
+  .talk-log { min-height: 180px; max-height: 60vh; padding: 20px 16px; }
   .talk-msg { max-width: 88%; }
   .talk-form { padding-left: 16px; }
 }

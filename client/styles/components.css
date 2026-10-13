@@ -119,16 +119,6 @@
 }
 .btn-primary:not(:disabled):hover { transform: translateX(3px); }
 .btn-primary:disabled { background: transparent; color: var(--fg-3); box-shadow: inset 0 0 0 1px var(--line-2); }
-.btn-line {
-  display: inline-flex; align-items: center; gap: 6px;
-  height: 34px; padding: 0 14px;
-  border: 1px solid var(--line-2);
-  border-radius: 999px;
-  font: 400 var(--t-xs)/1 var(--font-mono);
-  transition: border-color var(--fast), background var(--fast), color var(--fast);
-}
-.btn-line:not(:disabled):hover { border-color: var(--fg); background: var(--fg); color: var(--bg); }
-.btn-line:disabled { color: var(--fg-3); }
 
 /* ——— equalizer glyph ——— */
 .eq { display: inline-flex; align-items: end; gap: 2px; height: 14px; }
@@ -138,5 +128,3 @@
 .eq i:nth-child(4) { animation-duration: 0.85s; animation-delay: -0.1s; }
 .eq i:nth-child(5) { animation-duration: 1.05s; animation-delay: -0.35s; }
 @keyframes eq { from { transform: scaleY(0.15); } to { transform: scaleY(1); } }
-.eq-lg { height: 28px; gap: 3px; }
-.eq-lg i { width: 3px; }

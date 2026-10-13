@@ -1,8 +1,8 @@
 .projects { border-top: 1px solid var(--line-2); }
 .project {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 160px 70px 100px;
-  grid-template-areas: 'idx name kind year status' '. note note note note';
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  grid-template-areas: 'idx name status' '. note note';
   column-gap: 16px;
   align-items: baseline;
   padding: 22px 0;
@@ -13,8 +13,6 @@
 a.project { cursor: pointer; }
 .p-idx { grid-area: idx; color: var(--fg-3); }
 .p-name { grid-area: name; font-size: clamp(36px, 6.4vw, 104px); font-weight: 450; letter-spacing: -0.05em; line-height: 0.95; }
-.p-kind { grid-area: kind; }
-.p-year { grid-area: year; }
 .p-status { grid-area: status; justify-self: end; display: inline-flex; align-items: center; gap: 6px; }
 .p-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; border: 1px solid currentColor; }
 .s-live::before, .s-building::before { background: currentColor; }
@@ -56,8 +54,7 @@ a.project { cursor: pointer; }
 .coder-empty { padding: 22px 0; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line); }
 
 @media (max-width: 800px) {
-  .project { grid-template-columns: 32px 1fr auto; grid-template-areas: 'idx name status' '. kind year' '. note note'; row-gap: 6px; }
-  .p-year { justify-self: end; }
+  .project { grid-template-columns: 32px 1fr auto; row-gap: 6px; }
   .p-note { max-height: none; opacity: 1; padding-top: 6px; }
   .project-preview { display: none; }
   .projects[data-hovering] .project { opacity: 1; }

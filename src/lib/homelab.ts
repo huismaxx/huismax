@@ -439,18 +439,25 @@ export async function host(env: Env, self: URL, cached: Cacher): Promise<Host | 
 
 /* ——— the self-hosted sites ——— */
 
-/** Up = the site answers at all (a login page or a redirect counts); down = no answer in 5 s, or a 5xx. */
+/**
+ * Up = the site answers at all (a login page or a redirect counts); down = no answer in 5 s, or a 5xx.
+ * A miss is asked once more before it counts, so one slow answer doesn't show a site as offline for a minute.
+ */
 export async function checkServices(list: { id: string; url: string }[]): Promise<ServiceStatus[]> {
+  const once = async (url: string) => {
+    const t0 = Date.now();
+    try {
+      const res = await fetch(url, { redirect: 'manual', headers: { 'User-Agent': 'huismax.com/homelab status check' }, signal: AbortSignal.timeout(TIMEOUT) });
+      await res.body?.cancel();
+      return { up: res.status < 500, ms: Date.now() - t0 };
+    } catch {
+      return { up: false, ms: null };
+    }
+  };
   return Promise.all(
     list.map(async ({ id, url }) => {
-      const t0 = Date.now();
-      try {
-        const res = await fetch(url, { redirect: 'manual', headers: { 'User-Agent': 'huismax.com/homelab status check' }, signal: AbortSignal.timeout(TIMEOUT) });
-        await res.body?.cancel();
-        return { id, up: res.status < 500, ms: Date.now() - t0 };
-      } catch {
-        return { id, up: false, ms: null };
-      }
+      const first = await once(url);
+      return { id, ...(first.up ? first : await once(url)) };
     }),
   );
 }

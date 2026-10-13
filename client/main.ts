@@ -6,7 +6,6 @@ import { paintLive, startLivePolling } from './lib/live';
 import { startRouter } from './lib/router';
 import { startPalette } from './lib/palette';
 import { startMenu } from './lib/menu';
-import { startSupport } from './lib/support';
 import { startTalk } from './lib/talk';
 import { startAudioBar, playLive } from './lib/audiobar';
 import { startTracking } from './lib/track';
@@ -38,7 +37,7 @@ let scope = new Scope();
 function mount(main: HTMLElement) {
   scope = new Scope();
   paintLive(main);
-  chat.sync(main);
+  chat?.sync(main);
   // Staggered entrance for anything marked [data-reveal] or list rows, via CSS.
   main.classList.add('is-entering');
   requestAnimationFrame(() => requestAnimationFrame(() => main.classList.remove('is-entering')));
@@ -54,10 +53,9 @@ const router = startRouter({
 
 startPalette(router.navigate);
 startMenu(router.navigate);
-// The chat: the homepage's own live section when there's a Chatwoot API inbox; Chatwoot's widget with only a
-// website token; /reply with neither.
-const chatConfig = readJSON<{ chatwoot?: string; inbox?: string }>('chat-config');
-const chat = chatConfig?.inbox ? startTalk(chatConfig.inbox, router.navigate) : startSupport(chatConfig?.chatwoot ?? '', router.navigate);
+// The live chat with Max (homepage chat_, Chatwoot behind it). Without an inbox the header's chat is a link to /reply.
+const inbox = readJSON<{ inbox?: string }>('chat-config')?.inbox;
+const chat = inbox ? startTalk(inbox, router.navigate) : null;
 startAudioBar(router.navigate);
 startLivePolling();
 startTracking();

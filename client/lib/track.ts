@@ -20,7 +20,7 @@ export type TrackEvent =
   | 'muse-board' // { board }
   | 'reply-sent'
   | 'dj-request-sent'
-  | 'chat-open' // once per visit
+  | 'chat-start' // a visitor's first message
   | 'listen-live'
   | 'outbound'; // { host }
 

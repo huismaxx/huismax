@@ -155,19 +155,19 @@ export const Home = ({ live, presence, spotifyConnected, settings, identities, p
       </section>
 
       <section class="home-index" aria-label="index">
-        <Cell href="/now">
-          <span class="index-label mono">now_</span>
-          <ul class="index-list">
-            <li>
-              <span class="mono dim">right now</span> <span data-presence-status>{presence.status}</span>
-            </li>
-            {now.map((n) => (
-              <li>
-                {s(n.label) && <span class="mono dim">{s(n.label)}</span>} {s(n.text)}
-              </li>
-            ))}
-          </ul>
-        </Cell>
+        {/* the status itself is already under the headline; this is the rest of /now */}
+        {now.length > 0 && (
+          <Cell href="/now">
+            <span class="index-label mono">now_</span>
+            <ul class="index-list">
+              {now.map((n) => (
+                <li>
+                  {s(n.label) && <span class="mono dim">{s(n.label)}</span>} {s(n.text)}
+                </li>
+              ))}
+            </ul>
+          </Cell>
+        )}
         {/* the physical server as a whole, filled from /api/homelab/host (client/pages/home-host.ts); stays hidden without data */}
         {open('/homelab') && (
           <a class="index-cell index-host" data-prox href="/homelab" data-host hidden>

@@ -1,27 +1,6 @@
-/* ——— chat: the site's own buttons ([data-chat-open]) open Chatwoot (client/lib/support.ts) ——— */
+/* ——— the header's chat link: to the homepage's live chat_ (client/lib/talk.ts) ——— */
 
 .chat-btn { white-space: nowrap; }
-.chat-btn[aria-expanded='true'] { color: var(--bg); background: var(--fg); border-color: var(--fg); }
-
-/* Chatwoot (client/lib/support.ts): its window as the site's side panel, under the header (so the header's chat
-   button, which closes it, stays in reach). Phones keep Chatwoot's own full-screen window and close button.
-   `:not(.woot--hide)` leaves Chatwoot's own hiding alone. */
-@media (min-width: 668px) {
-  html body .woot-widget-holder:not(.woot--hide) {
-    top: var(--header-h) !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: min(440px, 100vw) !important;
-    height: auto !important;
-    max-height: none !important;
-    min-height: 0 !important;
-    border-radius: 0 !important;
-    border-left: 1px solid var(--line);
-    border-top: 1px solid var(--line);
-    box-shadow: none !important;
-  }
-}
-[data-chat-open][aria-busy] { cursor: progress; }
 
 /* a reply from Max arrived while the chat wasn't in view (client/lib/talk.ts) */
 .chat-btn[data-unread] { position: relative; }

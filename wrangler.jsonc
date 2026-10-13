@@ -22,11 +22,8 @@
     "MONITORING_API_URL": "https://api.huismax.com",
     // Umami at analytics.huismax.com: the huismax.com website's ID (public). Empty: no analytics script.
     "UMAMI_WEBSITE_ID": "40d0a0b8-a849-4f29-b66e-85cfb3b35e92",
-    // Chatwoot at chat.huismax.com: the huismax.com website inbox's token (public; it's in every page that has the widget).
-    // Empty: the chat buttons lead to /reply instead.
-    "CHATWOOT_WEBSITE_TOKEN": "3HoEMad442t9XMCqdwpUjk3W",
-    // Chatwoot API-channel inbox identifier (public): the homepage's live chat_ section talks to it directly
-    // (client/lib/talk.ts). Empty: the chat buttons open the widget above instead.
+    // Chatwoot (chat.huismax.com) API-channel inbox identifier, public: the homepage's live chat_ talks to it directly
+    // (client/lib/talk.ts). Empty: no chat_, and the header's chat leads to /reply.
     "CHATWOOT_INBOX_ID": "riwdAsAJffyUNYbe9imTL1oj",
     // Public by design (it appears in the Spotify login URL). The client SECRET is never here:
     // it stays a Secret in the Cloudflare dashboard.
