@@ -15,7 +15,11 @@ import { track } from './track';
 const BASE = 'https://chat.huismax.com';
 const KEY = 'huismax:talk';
 const MAX_LEN = 1000;
+/** how often to ask for messages: without the socket, and (as a safety net for a missed event) with it */
 const POLL = 10_000;
+const POLL_LIVE = 60_000;
+/** a subscription Chatwoot hasn't confirmed by then is treated as failed */
+const CONFIRM_TIMEOUT = 10_000;
 const PRESENCE = 20_000;
 
 type Saved = { inbox: string; sourceId: string; pubsub: string; contactId: number; conversationId: number };
@@ -124,12 +128,15 @@ export function startTalk(inbox: string, navigate: (href: string) => void) {
 
   /* ——— live: Chatwoot's ActionCable socket, polling when it can't connect ——— */
 
-  const identifier = () => JSON.stringify({ channel: 'RoomChannel', pubsub_token: saved!.pubsub, user_id: saved!.contactId });
+  // A visitor subscribes with its pubsub token alone. `user_id` means an agent to Chatwoot's RoomChannel: with the
+  // contact's id there it looks for a user, finds none, and the subscription silently never happens.
+  const identifier = () => JSON.stringify({ channel: 'RoomChannel', pubsub_token: saved!.pubsub });
   function connect() {
     if (!saved || ws) return;
-    clearTimeout(pollTimer);
     const sock = new WebSocket(`${BASE.replace(/^http/, 'ws')}/cable`);
     ws = sock;
+    // not confirmed (or rejected): close, poll, and try again later, rather than wait on a socket that says nothing
+    const confirmTimer = window.setTimeout(() => sock.close(), CONFIRM_TIMEOUT);
     sock.onopen = () => sock.send(JSON.stringify({ command: 'subscribe', identifier: identifier() }));
     sock.onmessage = (e) => {
       let d: { type?: string; message?: { event?: string; data?: Record<string, unknown> } };
@@ -139,13 +146,17 @@ export function startTalk(inbox: string, navigate: (href: string) => void) {
         return;
       }
       if (d.type === 'confirm_subscription') {
+        clearTimeout(confirmTimer);
         wsUp = true;
         retry = 0;
         presence();
         // anything sent while we weren't listening
         void load();
+        schedulePoll();
+        paint();
         return;
       }
+      if (d.type === 'reject_subscription') return void sock.close();
       const ev = d.message?.event, data = d.message?.data;
       if (!ev || !data) return;
       if (ev === 'message.created' || ev === 'message.updated') onMessage(data);
@@ -160,19 +171,25 @@ export function startTalk(inbox: string, navigate: (href: string) => void) {
       }
     };
     sock.onclose = () => {
-      ws = null;
+      clearTimeout(confirmTimer);
+      if (ws === sock) ws = null;
       wsUp = false;
       clearTimeout(presenceTimer);
-      // try again later; meanwhile ask every few seconds
+      paint();
+      // try again later; meanwhile poll() asks every few seconds
       retry = Math.min(retry + 1, 6);
-      pollTimer = window.setTimeout(poll, POLL);
+      schedulePoll();
       window.setTimeout(connect, 1000 * 2 ** retry);
     };
   }
+  /** Asks for the messages every 10 s without the socket, every minute with it (in case an event went missing). */
+  const schedulePoll = () => {
+    clearTimeout(pollTimer);
+    if (saved) pollTimer = window.setTimeout(poll, wsUp ? POLL_LIVE : POLL);
+  };
   async function poll() {
-    if (wsUp || !saved) return;
-    await load();
-    pollTimer = window.setTimeout(poll, POLL);
+    if (!document.hidden) await load();
+    schedulePoll();
   }
   /** Lets Max see in Chatwoot that the visitor is still here. */
   function presence() {
@@ -191,6 +208,7 @@ export function startTalk(inbox: string, navigate: (href: string) => void) {
     saved = { inbox, sourceId: c.source_id, pubsub: c.pubsub_token, contactId: c.id, conversationId: conv.id };
     write(saved);
     connect();
+    schedulePoll();
   }
 
   async function send(text: string, retryOf?: Msg) {
@@ -321,11 +339,15 @@ export function startTalk(inbox: string, navigate: (href: string) => void) {
       setTimeout(go, 400);
     }
   });
+  // back to the tab (phones suspend sockets in the background): catch up at once
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && view?.isConnected) paint();
+    if (document.hidden) return;
+    if (saved) void load();
+    else if (view?.isConnected) paint();
   });
 
   void load();
   connect();
+  schedulePoll();
   return { sync: mount };
 }
