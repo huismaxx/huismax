@@ -27,7 +27,7 @@
     "CHATWOOT_WEBSITE_TOKEN": "3HoEMad442t9XMCqdwpUjk3W",
     // Chatwoot API-channel inbox identifier (public): the homepage's live chat_ section talks to it directly
     // (client/lib/talk.ts). Empty: the chat buttons open the widget above instead.
-    "CHATWOOT_INBOX_ID": "",
+    "CHATWOOT_INBOX_ID": "riwdAsAJffyUNYbe9imTL1oj",
     // Public by design (it appears in the Spotify login URL). The client SECRET is never here:
     // it stays a Secret in the Cloudflare dashboard.
     "SPOTIFY_CLIENT_ID": "e0ea0ee972a640e88f0aac83e2acb846"

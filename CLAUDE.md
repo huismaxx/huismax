@@ -60,7 +60,7 @@ Worth setting up in Umami later (server side): goals or funnels for /muse → `m
 
 **OpenClaw is deprecated.** It is not part of the architecture. Don't build anything on it, and don't treat it as the AI backend.
 
-Status: **built; waiting on the API inbox.** The chat is the homepage's own `chat_` section (`client/lib/talk.ts`), live both ways: Chatwoot's public client API for an **API-channel inbox** (`CHATWOOT_INBOX_ID` in `wrangler.jsonc` `vars`) and its websocket `/cable`. Max answers from Chatwoot (phone app notifications). Until `CHATWOOT_INBOX_ID` is set, the chat buttons open Chatwoot's widget for the website inbox ("huismax.com", id 1, `CHATWOOT_WEBSITE_TOKEN`, `client/lib/support.ts`); with neither, /reply.
+Status: **built.** API inbox "huismax.com live chat" (id 2, identifier `riwdAsAJffyUNYbe9imTL1oj`). The chat is the homepage's own `chat_` section (`client/lib/talk.ts`), live both ways: Chatwoot's public client API for an **API-channel inbox** (`CHATWOOT_INBOX_ID` in `wrangler.jsonc` `vars`) and its websocket `/cable`. Max answers from Chatwoot (phone app notifications). Until `CHATWOOT_INBOX_ID` is set, the chat buttons open Chatwoot's widget for the website inbox ("huismax.com", id 1, `CHATWOOT_WEBSITE_TOKEN`, `client/lib/support.ts`); with neither, /reply.
 
 - No away messages, reply-time promises or "AI" wording on the site: it's Max, live.
 - Chatwoot's websocket events used: `message.created`, `message.updated`, `conversation.typing_on/off`. Private notes and activity messages are never shown.
@@ -69,7 +69,7 @@ The old OpenClaw "AI assistant" chat (its client, `/api/chat`, `bridge/`, `CHAT_
 
 ## Open tools (homepage tools_)
 
-Services on the server that visitors can use without an account, listed in `/admin` → homelab → open tools. Only things safe for strangers, each isolated from Max's data, resource-limited and rate-limited at Cloudflare. Never: n8n, Chatwoot, Mautic, ERPNext/Odoo, Nextcloud admin, Grafana editing, Homepage, Proxmox, or anything that runs user code on the host. Today: MiroTalk (meet.huismax.com, `{room}` links).
+Services on the server that visitors can use without an account, listed in `/admin` → homelab → open tools. Only things safe for strangers, each isolated from Max's data, resource-limited and rate-limited at Cloudflare. Never: n8n, Chatwoot, Mautic, ERPNext/Odoo, Nextcloud admin, Grafana editing, Homepage, Proxmox, or anything that runs user code on the host. Today: MiroTalk (meet.huismax.com, `{room}` links), Excalidraw (draw.huismax.com), IT-Tools (tools.huismax.com), Stirling-PDF (pdf.huismax.com, 50 MB), PrivateBin (paste.huismax.com, pastes expire within a week).
 
 Plan:
 1. Chatwoot is the conversation and support platform: a Website inbox on chat.huismax.com, with Max (and later others) answering from Chatwoot.
@@ -87,6 +87,8 @@ Nothing feeds Mautic yet, and /reply messages and DJ requests are personal messa
 ## Open server requests
 
 - Chatwoot outgoing email: no SMTP yet, so visitors who leave an email don't get replies by email. Recommended: Resend SMTP (the site already uses Resend for /reply), sender `no-reply@huismax.com`. Waiting on Max.
+- `/v1/host`: the physical machine's model, RAM, drives and network (one-off read on the Proxmox host), plus `serverId` / `threads: 20` / `vcpus` going live.
+- Cloudflare hostnames for draw., tools., pdf. and paste.huismax.com.
 - Retire the OpenClaw chat bridge (`chat-bridge` service on 127.0.0.1:8790) and its tunnel hostname `chat-bridge.huismax.com`: the site no longer calls it.
 - Later: n8n → Chatwoot AI responder.
 

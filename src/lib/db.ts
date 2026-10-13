@@ -5,6 +5,7 @@ import m0003 from '../../migrations/0003_services.sql';
 import m0004 from '../../migrations/0004_services_erpnext.sql';
 import m0005 from '../../migrations/0005_projects_muse.sql';
 import m0006 from '../../migrations/0006_tools.sql';
+import m0007 from '../../migrations/0007_tools_more.sql';
 
 /**
  * D1 schema + first content, applied by the worker itself: the site deploys from a git push, so nobody runs
@@ -18,6 +19,7 @@ const MIGRATIONS: [name: string, sql: string][] = [
   ['0004_services_erpnext.sql', m0004],
   ['0005_projects_muse.sql', m0005],
   ['0006_tools.sql', m0006],
+  ['0007_tools_more.sql', m0007],
 ];
 
 let done = false;

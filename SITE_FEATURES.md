@@ -97,7 +97,7 @@ Verified against the production code on **2026-10-13**.
   - **now_:** status and Now items (links to `/now`).
   - **homelab_:** Max's physical home server as one machine: its hardware (CPU, memory, drives, network, OS) and live overall CPU (with the last hour as a line), RAM, disk use and uptime, refreshed about every 15 seconds (links to `/homelab`). It only appears when the server reports in.
   - **projects_:** Max's own projects with their status and a short note, each linking out (for example Tapical and the open-source Muse Companion).
-- **tools_** (full width): services on Max's server anyone can use, free and without an account, each with a live online/offline dot. Today: **video calls** (meet.huismax.com): **start a call** opens a fresh private room to share the link with.
+- **tools_** (full width): services on Max's server anyone can use, free and without an account, each with a live online/offline dot. Today: **video calls** (meet.huismax.com; **start a call** opens a fresh private room to share), a **whiteboard** (Excalidraw), **pdf tools** (Stirling-PDF, up to 50 MB), **private paste** (PrivateBin, encrypted, expires within a week) and **dev tools** (IT-Tools).
 - **chat_** (full width): the live chat with Max (section 3).
 - **Update timing:** status and live state refresh about every 15 seconds and Spotify about every 20 seconds. A change can take up to about a minute to appear.
 
