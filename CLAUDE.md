@@ -84,5 +84,7 @@ Nothing feeds Mautic yet, and /reply messages and DJ requests are personal messa
 
 ## Open server requests
 
-- Chatwoot inbox polish (sent): widget colour that works in dark mode, welcome text in Max's voice, reply time, away message, an optional email in the pre-chat form, and outgoing email for replies.
+- Chatwoot outgoing email: no SMTP yet, so visitors who leave an email don't get replies by email. Recommended: Resend SMTP (the site already uses Resend for /reply), sender `no-reply@huismax.com`. Waiting on Max.
 - Later: Penpot and Mautic public URLs (before any Mautic form or tracking goes on the site); n8n → Chatwoot AI responder.
+
+Chatwoot inbox settings (done): widget colour `#737373` (readable in both themes), "hi, it's max" welcome, reply time "in a few hours", business hours off (so the away message never shows), and a pre-chat form with one optional email field. "Powered by Chatwoot" stays: hiding it is a paid feature, and site CSS can't reach into the iframe.
