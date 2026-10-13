@@ -7,6 +7,7 @@ import { startRouter } from './lib/router';
 import { startPalette } from './lib/palette';
 import { startMenu } from './lib/menu';
 import { startSupport } from './lib/support';
+import { startTalk } from './lib/talk';
 import { startAudioBar, playLive } from './lib/audiobar';
 import { startTracking } from './lib/track';
 import { initHome } from './pages/home';
@@ -53,8 +54,10 @@ const router = startRouter({
 
 startPalette(router.navigate);
 startMenu(router.navigate);
-// Chatwoot (chat.huismax.com); without a website token the chat buttons lead to /reply
-const chat = startSupport(readJSON<{ chatwoot?: string }>('chat-config')?.chatwoot ?? '', router.navigate);
+// The chat: the homepage's own live section when there's a Chatwoot API inbox; Chatwoot's widget with only a
+// website token; /reply with neither.
+const chatConfig = readJSON<{ chatwoot?: string; inbox?: string }>('chat-config');
+const chat = chatConfig?.inbox ? startTalk(chatConfig.inbox, router.navigate) : startSupport(chatConfig?.chatwoot ?? '', router.navigate);
 startAudioBar(router.navigate);
 startLivePolling();
 startTracking();

@@ -94,8 +94,11 @@ export type Host = Meta & {
     /** the box itself, e.g. "Minisforum MS-01" or "custom build" */
     model: string;
     cpu: string;
+    /** the chip's own cores and threads (an i5-13600T: 14 / 20), not what a VM is given */
     cores: number | null;
     threads: number | null;
+    /** what the OS on the metal sees, when that's a VM (e.g. 14 vCPUs); null on bare metal */
+    vcpus: number | null;
     /** installed RAM in bytes, and its kind, e.g. "DDR5-5600" */
     memory: number | null;
     memoryType: string;
@@ -110,4 +113,6 @@ export type Host = Meta & {
   memory: Usage | null;
   /** every drive's filesystems added up */
   storage: Usage | null;
+  /** the last hour (about 30 points each), when the API has history for this machine */
+  trend: { cpu: number[]; memory: number[] };
 };

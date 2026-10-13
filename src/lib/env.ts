@@ -32,6 +32,8 @@ export type Env = {
   UMAMI_WEBSITE_ID?: string;
   /** Chatwoot (chat.huismax.com) website inbox token, public. Set: the site's chat buttons open Chatwoot. */
   CHATWOOT_WEBSITE_TOKEN?: string;
+  /** Chatwoot API-channel inbox identifier, public. Set: the homepage has the live chat_ section (client/lib/talk.ts). */
+  CHATWOOT_INBOX_ID?: string;
   /** Test overrides; leave unset in production. */
   SPOTIFY_ACCOUNTS_BASE?: string;
   SPOTIFY_API_BASE?: string;

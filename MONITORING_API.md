@@ -107,11 +107,12 @@ The physical machine as a whole, for the homepage's `homelab_` card: what it's b
 ```json
 {
   "name": "atlas",
+  "serverId": "atlas",
   "lastSeen": "2026-10-05T11:59:58Z",
   "uptimeSeconds": 3542400,
   "hardware": {
     "model": "custom build",
-    "cpu": "AMD Ryzen 9 5950X", "cores": 16, "threads": 32,
+    "cpu": "AMD Ryzen 9 5950X", "cores": 16, "threads": 32, "vcpus": null,
     "memoryBytes": 68719476736, "memoryType": "DDR4-3200 ECC",
     "gpu": "",
     "drives": [
@@ -128,7 +129,8 @@ The physical machine as a whole, for the homepage's `homelab_` card: what it's b
 ```
 
 - **Required:** `lastSeen` (older than 3 minutes: shown as down). Everything else is optional; an empty spec line is left out.
-- `hardware` is static: the API can keep it in a file. `cpu`, `memory` and `storage` are the host's own totals (storage = every data filesystem on the machine's drives added up, `/boot` left out). Drive sizes are the sold size in bytes (4 TB = 4000000000000).
+- `hardware` describes the **physical machine**, even when the API runs in a VM on it: `cores` / `threads` are the chip's own (an i5-13600T is 14 / 20), `memoryBytes` the RAM installed, `drives` the real drives, `model` the box. `vcpus` (optional) is what the VM sees. It is static: the API can keep it in a file.
+- `serverId` (optional): the `/v1/servers` / `/servers` id whose history draws the card's 1-hour CPU and memory lines. Without it the site uses the only server, if there is just one. `cpu`, `memory` and `storage` are the host's own totals (storage = every data filesystem on the machine's drives added up, `/boot` left out). Drive sizes are the sold size in bytes (4 TB = 4000000000000).
 - Until the API has it (a 404), the site uses the server `/v1/servers` or `/system-info` lists as bare metal (virtualization `bare metal` / `physical` / `none`, or role `hypervisor`), and hides the card when there's none.
 
 ## What never reaches the page

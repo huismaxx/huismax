@@ -67,12 +67,11 @@ Verified against the production code on **2026-10-13**.
 
 ## 3. Chat with Max · LIVE
 
-- **How to open it:** the **chat** button in the header (every page), or **"chat with max →"** on the homepage. Clicking again closes it.
-- **Who answers:** Max himself, through Chatwoot (chat.huismax.com). It isn't an AI and replies aren't instant; the chat says he usually replies in a few hours.
-- **Layout:** on desktop and tablet a side panel on the right, below the header, so visitors can keep browsing. On phones, a full-screen chat window with its own close button.
-- **Email:** the chat can ask for an optional email address, so Max can follow up later.
-- **The conversation stays** in that browser: coming back later shows it again, with any reply.
-- **If the chat can't load** (offline, blocked), the button opens **/reply** instead.
+- **Where:** the **chat_** section at the bottom of the homepage. The **chat** button in the header (every page) jumps there.
+- **Who answers:** Max himself. Every message reaches his phone; his reply appears in the chat the moment he sends it, with "max is typing…" while he writes. It isn't an AI.
+- **Use:** type and press Enter (Shift+Enter for a new line), or **send →**. Up to 1,000 characters. Chinese and Japanese input work.
+- **The conversation stays** in that browser: coming back later shows it again, with any reply. A reply that arrives while the visitor is on another page puts a red dot on the header's **chat** button.
+- **If a message can't be sent**, it's marked "not sent · tap to retry".
 
 ---
 
@@ -81,7 +80,6 @@ Verified against the production code on **2026-10-13**.
 - **Headline:**
   - "WHO IS MAX?" types itself out with a blinking cursor, over a faint "code rain" of falling glyphs.
   - An optional tagline sits under it (currently none).
-- **Chat button:** "chat with max →" opens the chat with Max.
 - **Status block:**
   - **Status line:** a breathing dot and Max's personal status, which he sets by hand. Examples: "building", "locked in", "touching grass", "afk", or any custom text.
   - **Spotify card:** album art, a state label ("now playing", "paused" or "last played · 2 h ago"), the track, the artist, and a progress bar while playing or paused. Clicking it opens the track on Spotify.
@@ -97,8 +95,10 @@ Verified against the production code on **2026-10-13**.
   - Keyboard: ↑/↓ moves between rows and keys 1–9 jump to a row.
 - **Index (under the hero):**
   - **now_:** status and Now items (links to `/now`).
-  - **homelab_:** Max's physical home server as one machine: its hardware (CPU, memory, drives, network, OS) and live overall CPU, RAM, disk use and uptime, refreshed about every 15 seconds (links to `/homelab`). It only appears when the server reports in.
+  - **homelab_:** Max's physical home server as one machine: its hardware (CPU, memory, drives, network, OS) and live overall CPU (with the last hour as a line), RAM, disk use and uptime, refreshed about every 15 seconds (links to `/homelab`). It only appears when the server reports in.
   - **projects_:** Max's own projects with their status and a short note, each linking out (for example Tapical and the open-source Muse Companion).
+- **tools_** (full width): services on Max's server anyone can use, free and without an account, each with a live online/offline dot. Today: **video calls** (meet.huismax.com): **start a call** opens a fresh private room to share the link with.
+- **chat_** (full width): the live chat with Max (section 3).
 - **Update timing:** status and live state refresh about every 15 seconds and Spotify about every 20 seconds. A change can take up to about a minute to appear.
 
 **Current content (snapshot):**
@@ -298,7 +298,7 @@ Use `/reply` for everything contact-related: collaborations, DJ bookings, photog
   - Homepage: ↑/↓ and 1–9 move through identities.
   - Vibe coder: ↓ and ↑ move through the project list.
   - Photo viewer: ←/→ steps through photos and Esc closes it.
-  - Chat: Esc closes it (when focus is on the page).
+  - Chat: Enter sends, Shift+Enter adds a new line.
 
 ---
 

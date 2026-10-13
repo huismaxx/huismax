@@ -199,10 +199,12 @@ const rawHost = (over: Record<string, unknown> = {}) => ({
 });
 
 test('host: read like a server (clamped, masked, junk dropped); health from age and load', () => {
-  const x = readHost(rawHost())!;
+  const x = readHost(rawHost({ hardware: { ...rawHost().hardware, cores: 14, threads: 20, vcpus: 14 } }))!;
+  assert.deepEqual([x.hardware.cores, x.hardware.threads, x.hardware.vcpus], [14, 20, 14], 'the chip, and what the VM gets');
   assert.equal(x.cpu.usage, 100);
   assert.equal(x.hardware.model, 'custom build at •••');
   assert.equal(x.hardware.drives.length, 1);
+  assert.equal(x.hardware.model, 'custom build at •••');
   assert.ok(!('token' in x));
   assert.equal(readHost('junk'), null);
   assert.equal(assessHost(x, Date.now()), 'degraded', 'cpu at 100%');
@@ -224,6 +226,7 @@ test('/api/homelab/host: demo, /v1/host when the API has it, else its bare-metal
   assert.equal(demo.source, 'demo');
   assert.equal(demo.hardware.drives.length, 3);
   assert.ok(demo.memory.total > 0 && demo.storage.total > 0 && demo.uptime > 0);
+  assert.ok(demo.trend.cpu.length > 10, 'the last hour, from its server’s history');
 
   // the API as it is today (no /v1/servers): the fallback reads its existing endpoints
   let role = 'docker host';

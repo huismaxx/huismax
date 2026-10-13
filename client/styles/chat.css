@@ -22,3 +22,17 @@
   }
 }
 [data-chat-open][aria-busy] { cursor: progress; }
+
+/* a reply from Max arrived while the chat wasn't in view (client/lib/talk.ts) */
+.chat-btn[data-unread] { position: relative; }
+.chat-btn[data-unread]::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--live);
+  box-shadow: 0 0 0 2px var(--bg);
+}

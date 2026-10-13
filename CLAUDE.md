@@ -18,7 +18,7 @@ The public site stays on Cloudflare Workers. Never move it onto the home server.
 | Service | URL | Role for the website |
 |---|---|---|
 | Umami | https://analytics.huismax.com | Main analytics: page views, events, conversions. There is no Google Analytics on the site, so don't add any. |
-| Chatwoot | https://chat.huismax.com | Customer support and website chat, later AI-assisted. Use its widget, styled to match huismax. Don't build a support backend. |
+| Chatwoot | https://chat.huismax.com | The backend of the homepage's live chat_ (public client API + websocket, in the site's own design). Don't build a support backend. |
 | Mautic | https://mautic.huismax.com | Marketing automation. Only for real leads, subscribers, campaign participants and customers. |
 | n8n | https://n8n.huismax.com | The glue between systems (form → Mautic/Chatwoot/notifications, GitHub → ops, Chatwoot → AI). Core site logic stays in code. |
 | Penpot | https://design.huismax.com | Design and prototyping for big redesigns, design systems and complex flows. Small UI changes go straight into code. |
@@ -60,14 +60,16 @@ Worth setting up in Umami later (server side): goals or funnels for /muse → `m
 
 **OpenClaw is deprecated.** It is not part of the architecture. Don't build anything on it, and don't treat it as the AI backend.
 
-Status: **live; the only chat.** Every `[data-chat-open]` button opens Chatwoot (`client/lib/support.ts`, styles in `client/styles/chat.css`); without `CHATWOOT_WEBSITE_TOKEN` they lead to /reply. Inbox "huismax.com", id 1, Chatwoot 4.18.0, HMAC off (there are no logged-in visitors; if that changes, turn HMAC on and sign in the Worker).
+Status: **built; waiting on the API inbox.** The chat is the homepage's own `chat_` section (`client/lib/talk.ts`), live both ways: Chatwoot's public client API for an **API-channel inbox** (`CHATWOOT_INBOX_ID` in `wrangler.jsonc` `vars`) and its websocket `/cable`. Max answers from Chatwoot (phone app notifications). Until `CHATWOOT_INBOX_ID` is set, the chat buttons open Chatwoot's widget for the website inbox ("huismax.com", id 1, `CHATWOOT_WEBSITE_TOKEN`, `client/lib/support.ts`); with neither, /reply.
 
-- The SDK loads on intent (hover, focus or a click on a chat button), or at idle when the browser already has a conversation (`cw_conversation` cookie). If it can't load within 12 s, the button goes to /reply.
-- On desktop (668px and up) the widget is the site's right-hand side panel under the header, square and with a 1px line. On phones, Chatwoot's own full-screen window. The widget's colour scheme follows the site's theme toggle.
-- This SDK version has no message events, only `ready`, `opened`, `closed`, `error` and `postback`. So the site can count opens, not messages.
-- Welcome text, away message, reply time, pre-chat form and widget colour are inbox settings on the server, not in this repo.
+- No away messages, reply-time promises or "AI" wording on the site: it's Max, live.
+- Chatwoot's websocket events used: `message.created`, `message.updated`, `conversation.typing_on/off`. Private notes and activity messages are never shown.
 
 The old OpenClaw "AI assistant" chat (its client, `/api/chat`, `bridge/`, `CHAT_BRIDGE_URL` / `CHAT_BRIDGE_SECRET`) has been removed from the repo. The two Worker variables can be deleted in the Cloudflare dashboard.
+
+## Open tools (homepage tools_)
+
+Services on the server that visitors can use without an account, listed in `/admin` → homelab → open tools. Only things safe for strangers, each isolated from Max's data, resource-limited and rate-limited at Cloudflare. Never: n8n, Chatwoot, Mautic, ERPNext/Odoo, Nextcloud admin, Grafana editing, Homepage, Proxmox, or anything that runs user code on the host. Today: MiroTalk (meet.huismax.com, `{room}` links).
 
 Plan:
 1. Chatwoot is the conversation and support platform: a Website inbox on chat.huismax.com, with Max (and later others) answering from Chatwoot.

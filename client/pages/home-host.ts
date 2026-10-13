@@ -1,5 +1,6 @@
 import { h } from '../admin/h';
 import { $, type Scope } from '../lib/dom';
+import { sparkline } from '../lib/chart';
 import { bytes, ofTotal, pct, share, uptime } from '../lib/units';
 import type { Drive, Health, Host } from '../../src/lib/homelab-types';
 
@@ -38,8 +39,21 @@ const meter = (value: number | null) => {
   if ((value ?? 0) >= 90) el.classList.add('is-hot');
   return el;
 };
-const stat = (label: string, value: string, sub: string, fill?: number | null) =>
-  h('div', null, h('dt', { class: 'mono' }, label), h('dd', null, h('span', { class: 'host-value' }, value), sub ? h('span', { class: 'mono dim' }, sub) : null), fill === undefined ? null : meter(fill));
+/** a figure, a small line under it, then the last hour as a sparkline (or a meter when there's no history) */
+const stat = (label: string, value: string, sub: string, fill?: number | null, trend: number[] = []) =>
+  h(
+    'div',
+    null,
+    h('dt', { class: 'mono' }, label),
+    h('dd', null, h('span', { class: 'host-value' }, value), sub ? h('span', { class: 'mono dim' }, sub) : null),
+    trend.length > 1 ? sparkline(trend) : fill === undefined ? null : meter(fill),
+  );
+
+/** "14 cores · 20 threads", and what the VM on it gets */
+function cpuLine(hw: Host['hardware']) {
+  const chip = hw.cores && hw.threads && hw.threads !== hw.cores ? `${hw.cores} cores · ${hw.threads} threads` : hw.cores ? `${hw.cores} cores` : '';
+  return [[hw.cpu, chip].filter(Boolean).join(' · '), hw.vcpus ? `${hw.vcpus} vCPU to the server VM` : ''];
+}
 
 function paint(card: HTMLElement, x: Host) {
   const hw = x.hardware;
@@ -49,10 +63,9 @@ function paint(card: HTMLElement, x: Host) {
   $('[data-host-name]', card)!.textContent = x.name;
   $('[data-host-model]', card)!.textContent = hw.model;
 
-  const threads = hw.cores && hw.threads ? `${hw.cores}c / ${hw.threads}t` : hw.cores ? `${hw.cores} cores` : '';
   $('[data-host-specs]', card)!.replaceChildren(
     ...[
-      row('cpu', [hw.cpu, threads].filter(Boolean).join(' · ')),
+      row('cpu', cpuLine(hw)),
       row('memory', [hw.memory ? bytes(hw.memory) : '', hw.memoryType].filter(Boolean).join(' ')),
       row('storage', drives(hw.drives)),
       row('gpu', hw.gpu),
@@ -63,8 +76,8 @@ function paint(card: HTMLElement, x: Host) {
 
   const mem = share(x.memory), disk = share(x.storage);
   $('[data-host-live]', card)!.replaceChildren(
-    stat('cpu', pct(x.cpu.usage), x.cpu.temperature === null ? '' : `${Math.round(x.cpu.temperature)}°C`, x.cpu.usage),
-    stat('ram', pct(mem), x.memory ? ofTotal(x.memory.used, x.memory.total) : '', mem),
+    stat('cpu', pct(x.cpu.usage), x.cpu.temperature === null ? '' : `${Math.round(x.cpu.temperature)}°C`, x.cpu.usage, x.trend.cpu),
+    stat('ram', pct(mem), x.memory ? ofTotal(x.memory.used, x.memory.total) : '', mem, x.trend.memory),
     stat('disk', pct(disk), x.storage ? ofTotal(x.storage.used, x.storage.total) : '', disk),
     stat('uptime', uptime(x.uptime), ''),
   );

@@ -7,6 +7,7 @@ import { playingNow, spotify } from '../lib/spotify';
 import { readSpectrum } from '../lib/viz';
 import type { PageInit } from '../main';
 import { startHost } from './home-host';
+import { startTools } from './home-tools';
 
 const GLYPHS = '01{}[]<>/\\=+*;:._-~$#&|?!abcdefmx';
 
@@ -22,6 +23,7 @@ export const initHome: PageInit = (main, scope) => {
   const caption = $('[data-mood-caption]', main)!;
   const links = $$<HTMLAnchorElement>('[data-mood-key]', main);
   startHost(main, scope);
+  startTools(main, scope);
 
   /* ——— caption typewriter ——— */
   let typeTimer = 0;

@@ -246,3 +246,131 @@ a.project-item:hover { padding-left: 6px; }
 [data-live-card] .listening-art { background: var(--bg-2); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--live) 45%, var(--line)); }
 .live-viz { display: block; width: 100%; height: 100%; }
 [data-live-card] .listening-artist:empty { display: none; }
+
+/* ——— full-width blocks under the index: tools_, chat_ ——— */
+.home-block {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr);
+  gap: 24px clamp(32px, 6vw, 96px);
+  padding: 40px 0 48px;
+  border-bottom: 1px solid var(--line);
+  scroll-margin-top: var(--header-h);
+}
+.block-head { display: grid; align-content: start; gap: 12px; }
+.block-head .index-label { margin: 0; font-size: var(--t-sm); font-weight: 400; }
+.block-intro { max-width: 34ch; font-size: var(--t-lg); letter-spacing: -0.02em; line-height: 1.25; }
+
+/* tools_: one row per service, its state, what it does, and a way in */
+.tool-list { border-top: 1px solid var(--line-2); }
+.tool {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 0.7fr) minmax(0, 1.3fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+.tool-status { display: inline-flex; align-items: center; gap: 8px; font-size: var(--t-xs); color: var(--fg-3); }
+.tool-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line-2); }
+.tool[data-up='true'] .tool-dot { background: var(--fg); animation: blink 1.6s steps(1) infinite; }
+.tool[data-up='true'] .tool-status { color: var(--fg-2); }
+.tool[data-up='false'] .tool-dot { background: var(--live); }
+.tool-name { font-size: clamp(20px, 2vw, 28px); letter-spacing: -0.03em; line-height: 1.1; }
+.tool-desc { font-size: var(--t-sm); line-height: 1.45; }
+.tool-go { margin: 0; white-space: nowrap; }
+
+/* chat_: the conversation, in the site's black and white */
+.talk-status { display: inline-flex; align-items: center; gap: 8px; font-size: var(--t-xs); color: var(--fg-2); }
+.talk {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-2);
+  background: var(--bg);
+}
+.talk-empty { padding: 28px 20px 0; font-size: var(--t-md); }
+.talk-log {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: min(60vh, 560px);
+  min-height: 280px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px 20px;
+}
+.talk-day { align-self: center; padding: 8px 0 2px; font-size: 10px; color: var(--fg-3); }
+.talk-msg { display: grid; gap: 4px; max-width: min(80%, 520px); justify-items: start; }
+.talk-msg.is-new { animation: rise var(--mid) var(--ease) both; }
+.talk-msg[data-mine='true'] { align-self: flex-end; justify-items: end; }
+.talk-bubble {
+  padding: 10px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 16px 16px 16px 4px;
+  font-size: var(--t-md);
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.talk-msg[data-mine='true'] .talk-bubble { background: var(--fg); color: var(--bg); border-color: var(--fg); border-radius: 16px 16px 4px 16px; }
+.talk-msg[data-state='pending'] .talk-bubble { opacity: 0.6; }
+.talk-msg[data-state='failed'] { cursor: pointer; }
+.talk-msg[data-state='failed'] .talk-bubble { background: transparent; color: var(--fg); border: 1px dashed var(--live); }
+.talk-msg[data-state='failed'] .talk-meta { color: var(--live); }
+.talk-meta { font-size: 10px; color: var(--fg-3); }
+.talk-typing { padding: 0 20px 10px; font-size: var(--t-xs); }
+.talk-dots::after { content: '…'; animation: blink 1s steps(1) infinite; }
+.talk-error { padding: 0 20px 10px; font-size: var(--t-xs); color: var(--live); }
+.talk-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  padding: 12px 12px 12px 20px;
+  border-top: 1px solid var(--line);
+}
+.talk-form textarea {
+  width: 100%;
+  min-height: 40px;
+  max-height: 160px;
+  padding: 9px 0;
+  resize: none;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font: 400 var(--t-md)/1.45 var(--font-sans);
+  outline: none;
+}
+.talk-form textarea::placeholder { color: var(--fg-3); }
+/* iOS Safari zooms into any field under 16px */
+@media (pointer: coarse) { .talk-form textarea { font-size: 16px; } }
+.talk-send {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: var(--t-xs);
+  transition: transform var(--fast) var(--ease);
+}
+.talk-send:hover { transform: translateX(2px); }
+.talk-note { padding: 0 20px 12px; font-size: 10px; }
+
+@media (max-width: 960px) {
+  .home-block { grid-template-columns: minmax(0, 1fr); }
+  .tool { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'name go' 'desc desc' 'status status'; row-gap: 8px; }
+  .tool-name { grid-area: name; }
+  .tool-desc { grid-area: desc; }
+  .tool-status { grid-area: status; }
+  .tool-go { grid-area: go; }
+}
+@media (max-width: 560px) {
+  .home-block { padding: 32px 0 40px; }
+  .talk { margin: 0 calc(var(--gutter) * -1); border-left: 0; border-right: 0; }
+  .talk-empty { padding-left: 16px; }
+  .talk-log { max-height: 60vh; padding: 20px 16px; }
+  .talk-msg { max-width: 88%; }
+  .talk-form { padding-left: 16px; }
+}

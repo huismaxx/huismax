@@ -306,7 +306,10 @@ function trend(points: Point[]) {
 /* ——— the physical host (the homepage's homelab_ card) ——— */
 
 /** The host as read, before its health (that depends on how old the report is). */
-export type HostBase = Omit<Host, keyof Meta | 'health'>;
+export type HostBase = Omit<Host, keyof Meta | 'health' | 'trend'> & {
+  /** the /v1/servers (or /servers) id with this machine's history, if the API says */
+  serverId: string;
+};
 
 const drive = (v: unknown): Drive | null => {
   const o = obj(v);
@@ -322,6 +325,7 @@ export function readHost(v: unknown): HostBase | null {
   const memory = usage(o.memory);
   return {
     name: text(o.name, 40) || text(o.hostname, 40) || 'server',
+    serverId: SERVER_ID.test(text(o.serverId, 40)) ? text(o.serverId, 40) : '',
     lastSeen: iso(o.lastSeen),
     uptime: num(o.uptimeSeconds ?? o.uptime),
     hardware: {
@@ -329,6 +333,7 @@ export function readHost(v: unknown): HostBase | null {
       cpu: text(hw.cpu ?? hw.cpuModel, 80),
       cores: num(hw.cores, 0, 4096),
       threads: num(hw.threads, 0, 8192),
+      vcpus: num(hw.vcpus, 0, 8192),
       memory: num(hw.memoryBytes ?? hw.memory) ?? memory?.total ?? null,
       memoryType: text(hw.memoryType, 40),
       gpu: text(hw.gpu, 60),
@@ -352,6 +357,7 @@ export function hostFromServer(s: ServerBase): HostBase {
   const fastest = Math.max(0, ...s.interfaces.map((i) => i.speedMbps ?? 0));
   return {
     name: s.name,
+    serverId: s.id,
     lastSeen: s.lastSeen,
     uptime: s.uptime,
     hardware: {
@@ -359,6 +365,7 @@ export function hostFromServer(s: ServerBase): HostBase {
       cpu: s.system.cpuModel,
       cores: s.system.cores,
       threads: s.system.threads,
+      vcpus: null,
       memory: s.memory?.total ?? null,
       memoryType: '',
       gpu: '',
@@ -422,7 +429,12 @@ export async function host(env: Env, self: URL, cached: Cacher): Promise<Host | 
     return metal ? hostFromServer(metal) : null;
   });
   if (!got.data) return null;
-  return { source: src.kind, fetchedAt: got.fetchedAt, stale: got.stale, ...got.data, health: assessHost(got.data, Date.now()) };
+  const { serverId, ...h } = got.data;
+  // the sparklines: this machine's own history, by the id the API gave, or the only server it lists
+  const servers = serverId ? null : await snapshot(src, cached).then((s) => s.data).catch(() => []);
+  const id = serverId || (servers?.length === 1 ? servers[0].id : '');
+  const points = id ? await pointsOf(src, cached, id, '1h').then((p) => p.data).catch(() => []) : [];
+  return { source: src.kind, fetchedAt: got.fetchedAt, stale: got.stale, ...h, health: assessHost(got.data, Date.now()), trend: trend(points) };
 }
 
 /* ——— the self-hosted sites ——— */
@@ -574,6 +586,7 @@ export function demoHost(now: number) {
   const disks = b.storage.reduce((a, d) => ({ used: a.used + d.total * d.used, total: a.total + d.total }), { used: 0, total: 0 });
   return {
     name: b.name,
+    serverId: b.id,
     lastSeen: new Date(now - 4000).toISOString(),
     uptimeSeconds: b.up + Math.floor((now / 1000) % 86400),
     hardware: {

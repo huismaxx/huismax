@@ -19,6 +19,8 @@ type Props = {
   analytics?: string;
   /** Chatwoot website token (CHATWOOT_WEBSITE_TOKEN). Set: the chat buttons open Chatwoot; unset: they lead to /reply. */
   support?: string;
+  /** Chatwoot API-channel inbox (CHATWOOT_INBOX_ID). Set: the chat is the homepage's own live chat_ section. */
+  inbox?: string;
   children: Child;
 };
 
@@ -34,7 +36,7 @@ const themeBoot = `document.documentElement.classList.add('js');try{var t=localS
 
 const json = (v: unknown) => raw(JSON.stringify(v).replace(/</g, '\\u003c'));
 
-export const Layout = ({ page, title, description, live, site, analytics, support, children }: Props) => {
+export const Layout = ({ page, title, description, live, site, analytics, support, inbox, children }: Props) => {
   const s = site.settings;
   const fullTitle = title ? `${title} — huismax` : 'huismax';
   const desc = description || s.description || s.headline;
@@ -113,7 +115,11 @@ export const Layout = ({ page, title, description, live, site, analytics, suppor
         <div class="sr-only" aria-live="polite" data-route-announcer />
         <script type="application/json" id="site-nav">{json(clientNav)}</script>
         {/* the label only ever says LIVE: "off air" is never shown on the public site */}
-        {support && CHATWOOT_TOKEN.test(support) && <script type="application/json" id="chat-config">{json({ chatwoot: support })}</script>}
+        {((support && CHATWOOT_TOKEN.test(support)) || (inbox && CHATWOOT_TOKEN.test(inbox))) && (
+          <script type="application/json" id="chat-config">
+            {json({ chatwoot: support && CHATWOOT_TOKEN.test(support) ? support : undefined, inbox: inbox && CHATWOOT_TOKEN.test(inbox) ? inbox : undefined })}
+          </script>
+        )}
         <script type="application/json" id="live-initial">{json({ ...live, label: live.isLive ? 'LIVE' : '' })}</script>
       </body>
     </html>
