@@ -49,11 +49,8 @@ const stat = (label: string, value: string, sub: string, fill?: number | null, t
     trend.length > 1 ? sparkline(trend) : fill === undefined ? null : meter(fill),
   );
 
-/** "14 cores · 20 threads", and what the VM on it gets */
-function cpuLine(hw: Host['hardware']) {
-  const chip = hw.cores && hw.threads && hw.threads !== hw.cores ? `${hw.cores} cores · ${hw.threads} threads` : hw.cores ? `${hw.cores} cores` : '';
-  return [[hw.cpu, chip].filter(Boolean).join(' · '), hw.vcpus ? `${hw.vcpus} vCPU to the server VM` : ''];
-}
+/** "13th Gen Intel Core i5-13600T · 14 cores": the model and its core count, no threads or vCPUs */
+const cpuLine = (hw: Host['hardware']) => [hw.cpu, hw.cores ? `${hw.cores} cores` : ''].filter(Boolean).join(' · ');
 
 function paint(card: HTMLElement, x: Host) {
   const hw = x.hardware;

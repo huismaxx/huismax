@@ -87,7 +87,7 @@ Nothing feeds Mautic yet, and /reply messages and DJ requests are personal messa
 ## Open server requests
 
 - Chatwoot outgoing email: no SMTP yet, so visitors who leave an email don't get replies by email. Recommended: Resend SMTP (the site already uses Resend for /reply), sender `no-reply@huismax.com`. Waiting on Max.
-- `/v1/host`: the physical machine's model, RAM, drives and network (one-off read on the Proxmox host), plus `serverId` / `threads: 20` / `vcpus` going live.
+- `/v1/host`: the physical machine's model, RAM, drives and network (one-off read on the Proxmox host), plus `serverId` going live (for the homelab_ sparklines). The card shows cores only, no threads.
 - Cloudflare hostnames for draw., tools., pdf. and paste.huismax.com.
 - Retire the OpenClaw chat bridge (`chat-bridge` service on 127.0.0.1:8790) and its tunnel hostname `chat-bridge.huismax.com`: the site no longer calls it.
 - Later: n8n → Chatwoot AI responder.
