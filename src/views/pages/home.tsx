@@ -14,6 +14,10 @@ type Props = {
   identities: Item[];
   projects: Item[];
   now: Item[];
+  /** open services on the server (CMS → tools) */
+  tools: Item[];
+  /** the live chat_ section (a Chatwoot API inbox is configured) */
+  talk: boolean;
 };
 
 const s = (v: unknown) => (v === undefined || v === null ? '' : String(v));
@@ -48,7 +52,7 @@ function sideLink(id: Item, project: Item | undefined) {
   return null;
 }
 
-export const Home = ({ live, presence, spotifyConnected, settings, identities, projects, now }: Props) => {
+export const Home = ({ live, presence, spotifyConnected, settings, identities, projects, now, tools, talk }: Props) => {
   const project = projects.find((p) => s(p.url));
   // a row never leads to a page the admin has hidden
   const rows = identities.filter((id) => isOpen(settings, s(id.href)));
@@ -76,10 +80,6 @@ export const Home = ({ live, presence, spotifyConnected, settings, identities, p
             <Headline text={settings.headline} />
             {settings.tagline && <p class="who-tagline">{settings.tagline}</p>}
             <div class="home-actions">
-              <button type="button" class="home-chat" data-chat-open aria-haspopup="dialog" aria-expanded="false">
-                <span class="home-chat-dot" aria-hidden="true" />
-                chat with max <span aria-hidden="true">→</span>
-              </button>
               {/* Max's open-source ESP32 project (Muse Companion): the how-to page, which links the source */}
               <a class="home-chat home-perk" href="/muse">
                 <span class="home-perk-tag">open source</span> build your own muse gadget <span aria-hidden="true">→</span>
@@ -155,19 +155,19 @@ export const Home = ({ live, presence, spotifyConnected, settings, identities, p
       </section>
 
       <section class="home-index" aria-label="index">
-        <Cell href="/now">
-          <span class="index-label mono">now_</span>
-          <ul class="index-list">
-            <li>
-              <span class="mono dim">right now</span> <span data-presence-status>{presence.status}</span>
-            </li>
-            {now.map((n) => (
-              <li>
-                {s(n.label) && <span class="mono dim">{s(n.label)}</span>} {s(n.text)}
-              </li>
-            ))}
-          </ul>
-        </Cell>
+        {/* the status itself is already under the headline; this is the rest of /now */}
+        {now.length > 0 && (
+          <Cell href="/now">
+            <span class="index-label mono">now_</span>
+            <ul class="index-list">
+              {now.map((n) => (
+                <li>
+                  {s(n.label) && <span class="mono dim">{s(n.label)}</span>} {s(n.text)}
+                </li>
+              ))}
+            </ul>
+          </Cell>
+        )}
         {/* the physical server as a whole, filled from /api/homelab/host (client/pages/home-host.ts); stays hidden without data */}
         {open('/homelab') && (
           <a class="index-cell index-host" data-prox href="/homelab" data-host hidden>
@@ -215,6 +215,62 @@ export const Home = ({ live, presence, spotifyConnected, settings, identities, p
           </div>
         )}
       </section>
+
+      {/* services on Max's server anyone can use, no account; status and the {room} links come from client/pages/home-tools.ts */}
+      {tools.length > 0 && (
+        <section class="home-block home-tools" aria-labelledby="tools-label" data-tools>
+          <div class="block-head">
+            <h2 id="tools-label" class="index-label mono">tools_</h2>
+            <p class="block-intro">Things running on my server that you can use right now. Free, no account.</p>
+          </div>
+          <ul class="tool-list">
+            {tools.map((t) => (
+              <li class="tool" data-tool={s(t.id)}>
+                <span class="tool-status mono" data-tool-status aria-live="polite">
+                  <span class="tool-dot" aria-hidden="true" />
+                  <span data-tool-state>checking</span>
+                </span>
+                <span class="tool-name">{s(t.name)}</span>
+                <span class="tool-desc dim">{s(t.description)}</span>
+                <a class="home-chat tool-go" href={s(t.url).replace(/\{room\}.*$/, '').replace(/join\/$/, '')} data-tool-url={s(t.url)} target="_blank" rel="noopener noreferrer">
+                  {s(t.action) || 'open'} <span aria-hidden="true">↗</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* the live chat with Max (client/lib/talk.ts): his phone gets every message, his replies arrive here */}
+      {talk && (
+        <section id="chat" class="home-block home-talk" aria-labelledby="chat-label" data-talk>
+          <div class="block-head">
+            <h2 id="chat-label" class="index-label mono">chat_</h2>
+            <p class="block-intro">Message me here. It goes straight to my phone, and when I answer it shows up right here, live.</p>
+            <p class="talk-status mono">
+              <span class="doing-dot" aria-hidden="true" /> <span data-talk-status>live</span>
+            </p>
+          </div>
+          <div class="talk">
+            <p class="talk-empty dim" data-talk-empty hidden>
+              no messages yet. say hi.
+            </p>
+            <ol class="talk-log" data-talk-log role="log" aria-live="polite" aria-label="conversation with max" />
+            <p class="talk-typing mono dim" data-talk-typing hidden>
+              max is typing<span class="talk-dots" aria-hidden="true" />
+            </p>
+            <p class="talk-error mono" data-talk-error role="alert" hidden />
+            <form class="talk-form" data-talk-form>
+              <label class="sr-only" for="talk-input">message max</label>
+              <textarea id="talk-input" rows={1} maxlength={1000} placeholder="message max" autocomplete="off" enterkeyhint="send" />
+              <button type="submit" class="talk-send mono">
+                send <span aria-hidden="true">→</span>
+              </button>
+            </form>
+            <p class="talk-note mono dim">kept in this browser, so you can come back to it.</p>
+          </div>
+        </section>
+      )}
     </>
   );
 };

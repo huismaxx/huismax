@@ -44,13 +44,6 @@
 .console-clock { font-size: var(--t-md); font-variant-numeric: tabular-nums; }
 .dj-page[data-live='on'] .console-clock { color: var(--live); }
 
-.dj-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(32px, 5vw, 80px);
-  padding-top: clamp(56px, 8vw, 96px);
-}
-.session-name { font-size: var(--t-lg); letter-spacing: -0.02em; padding: 18px 0 12px; }
 .tracklist li {
   display: grid;
   grid-template-columns: 54px 1fr 1.3fr;
@@ -87,10 +80,6 @@
 .mix:hover .mix-wave i { background: var(--fg); }
 
 .archive { padding-top: clamp(56px, 8vw, 96px); }
-.archive-table th { text-align: left; font-weight: 400; color: var(--fg-3); padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); }
-.archive-table td { padding: 14px 12px 14px 0; border-bottom: 1px solid var(--line); font-size: var(--t-sm); }
-.archive-table tr { transition: background var(--fast); }
-.archive-table tbody tr:hover { background: var(--bg-2); }
 
 @media (max-width: 860px) {
   .dj-head { grid-template-columns: 1fr; }
@@ -99,15 +88,10 @@
   .soon { margin: 0; justify-self: start; }
   .console-bar .console-cell:first-child { grid-column: 1 / -1; }
   .console-bar .btn-primary { grid-column: 1 / -1; }
-  .dj-cols { grid-template-columns: 1fr; }
-  .archive-table th:nth-child(n + 5), .archive-table td:nth-child(n + 5) { display: none; }
-  .archive-table th:first-child, .archive-table td:first-child { display: none; }
 }
 
 .soon { align-self: end; margin-bottom: 1.4em; padding: 8px 14px; border: 1px solid var(--line-2); border-radius: 999px; color: var(--fg-2); letter-spacing: 0.06em; text-transform: uppercase; }
 .console-bar { grid-template-columns: 1.4fr 1fr auto; }
-.archive-empty { padding: 48px 0 16px; display: grid; gap: 10px; }
-.archive-empty-title { font: 500 clamp(28px, 4vw, 52px)/1 var(--font-mono); letter-spacing: -0.02em; }
 .mix-title .mono { margin-right: 10px; }
 
 /* off-air is simply the absence of live: no label, no clock */

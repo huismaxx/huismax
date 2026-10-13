@@ -405,6 +405,7 @@ export const Admin = ({ live, radio, presence, kv, spotify, monitoring, data, db
             </p>
           </section>
           {!s ? <NoDb error={dbError} /> : <Coll name="services" label="sites" note="shown on /homelab with a live up/down check. drag or use ↑ ↓ to order." />}
+          {s && <Coll name="tools" label="open tools" note="homepage tools_: services anyone can use without an account, with a live up/down check. never add an admin or login page here." />}
         </Section>
 
         <Section id="reply" settings={s}>

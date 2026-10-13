@@ -119,7 +119,7 @@ a.pick:hover, a.pick:focus-visible { padding-left: 6px; }
 .pick-sub { font-size: var(--t-sm); overflow-wrap: anywhere; }
 .pick .ext, .artist .ext { color: var(--fg-3); }
 
-.music-profile { justify-self: start; display: inline-flex; align-items: center; min-height: 32px; color: var(--fg-3); transition: color var(--fast); }
+.music-profile { justify-self: start; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; color: var(--fg-3); transition: color var(--fast); }
 .music-profile:hover, .music-profile:focus-visible { color: var(--fg); }
 
 /* ——— artists ——— */

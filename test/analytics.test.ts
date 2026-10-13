@@ -25,11 +25,18 @@ test('/muse download and link events', async () => {
   assert.match(html, /data-track="muse-board" data-track-board="stick"/);
 });
 
-test('the chat buttons get Chatwoot only with a valid website token', async () => {
-  assert.doesNotMatch(await get({}, '/'), /id="chat-config"/);
-  const html = await get({ CHATWOOT_WEBSITE_TOKEN: 'AbC123xyz456DEF789' }, '/');
-  assert.match(html, /<script type="application\/json" id="chat-config">\{"chatwoot":"AbC123xyz456DEF789"\}<\/script>/);
-  assert.match(html, /chat with max </);
-  assert.doesNotMatch(await get({ CHATWOOT_WEBSITE_TOKEN: 'x"><b>' }, '/'), /id="chat-config"/);
-  assert.doesNotMatch(await get({ CHATWOOT_WEBSITE_TOKEN: 'AbC123xyz456DEF789' }, '/admin'), /chat-config|chat\.huismax/);
+test('a Chatwoot API inbox: the homepage gets its own live chat_ section, the header links to it', async () => {
+  const html = await get({ CHATWOOT_INBOX_ID: 'Inbox123456789' }, '/');
+  assert.match(html, /<script type="application\/json" id="chat-config">\{"inbox":"Inbox123456789"\}<\/script>/);
+  assert.match(html, /<section id="chat" class="home-block home-talk"/);
+  assert.match(html, /id="talk-input"/);
+  assert.match(html, /<a class="menu-btn chat-btn" href="\/#chat" data-chat-open/);
+  // no inbox, or one that isn't an id: no chat_, and the header's chat is a plain link to /reply
+  for (const env of [{}, { CHATWOOT_INBOX_ID: '"><script>' }]) {
+    const page = await get(env, '/');
+    assert.doesNotMatch(page, /data-talk|chat-config/);
+    assert.match(page, /<a class="menu-btn chat-btn" href="\/reply">/);
+  }
+  // nothing of it on /admin
+  assert.doesNotMatch(await get({ CHATWOOT_INBOX_ID: 'Inbox123456789' }, '/admin'), /chat-config|chat\.huismax/);
 });

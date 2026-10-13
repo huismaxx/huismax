@@ -38,8 +38,9 @@
 .hl-health[data-health='down'] { color: var(--live); }
 
 /* ——— self-hosted sites ——— */
-.hl-sites { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1px; margin-top: 16px; background: var(--line); border: 1px solid var(--line); }
-.hl-site { display: grid; align-content: start; gap: 6px; height: 100%; min-height: 150px; padding: 18px; background: var(--bg); transition: background var(--fast); }
+/* hairlines per card (not a background showing through the gaps), so a short last row leaves no grey hole */
+.hl-sites { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); margin-top: 16px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.hl-site { display: grid; align-content: start; gap: 6px; height: 100%; min-height: 150px; padding: 18px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg); transition: background var(--fast); }
 .hl-site:hover, .hl-site:focus-visible { background: var(--bg-2); }
 .hl-site-name { font: 450 var(--t-lg) / 1 var(--font-sans); letter-spacing: -0.03em; }
 .hl-site-host { font-size: var(--t-xs); color: var(--fg-3); overflow-wrap: anywhere; }
@@ -49,7 +50,7 @@
 .hl-site[data-up='false'] .hl-site-state { color: var(--live); }
 
 /* ——— server cards ——— */
-.hl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
+.hl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 16px; margin-top: 16px; }
 .hl-card {
   display: grid;
   grid-template-columns: 4.6em 3.4em minmax(36px, 1fr) auto;
@@ -90,7 +91,7 @@
 .hl-table td.mono { font-size: var(--t-xs); }
 .hl-table a { text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
 .hl-table a:hover { text-decoration-color: currentColor; }
-.hl-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hl-num, .hl-table th.hl-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .hl-cname { font-weight: 450; white-space: nowrap; }
 .hl-col-image { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hl-col-status { white-space: nowrap; }

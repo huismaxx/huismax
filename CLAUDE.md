@@ -4,7 +4,7 @@ Read `README.md` for how the site is built. This file covers the infrastructure 
 
 ## Two Claudes
 
-- **Desktop Claude (this repo):** the website, the frontend, UI/UX, website repos, client-side tracking, the Chatwoot widget, forms and conversion flows, and working out what the website needs from the server.
+- **Desktop Claude (this repo):** the website, the frontend, UI/UX, website repos, client-side tracking, the homepage chat (Chatwoot's client API), forms and conversion flows, and working out what the website needs from the server.
 - **Server Claude:** Docker, Linux, n8n, Umami, Chatwoot, Mautic, Penpot, Homepage, databases, credentials, server APIs, logs, deploys on the server, monitoring and backups.
 
 The two can't talk to each other. When website work needs something done on the server, don't guess the server's setup and don't hand Max raw commands. Write a short, self-contained message for Server Claude, ending with exactly what to send back (IDs, URLs, tokens), and ask Max to forward it. Pending asks are listed under "Open server requests" below.
@@ -18,7 +18,7 @@ The public site stays on Cloudflare Workers. Never move it onto the home server.
 | Service | URL | Role for the website |
 |---|---|---|
 | Umami | https://analytics.huismax.com | Main analytics: page views, events, conversions. There is no Google Analytics on the site, so don't add any. |
-| Chatwoot | https://chat.huismax.com | Customer support and website chat, later AI-assisted. Use its widget, styled to match huismax. Don't build a support backend. |
+| Chatwoot | https://chat.huismax.com | The backend of the homepage's live chat_ (public client API + websocket, in the site's own design). Don't build a support backend. |
 | Mautic | https://mautic.huismax.com | Marketing automation. Only for real leads, subscribers, campaign participants and customers. |
 | n8n | https://n8n.huismax.com | The glue between systems (form → Mautic/Chatwoot/notifications, GitHub → ops, Chatwoot → AI). Core site logic stays in code. |
 | Penpot | https://design.huismax.com | Design and prototyping for big redesigns, design systems and complex flows. Small UI changes go straight into code. |
@@ -29,7 +29,7 @@ Intended flow: visitor → Umami → conversion (contact, signup, download) → 
 Rules:
 - Every integration fails quietly and loads after the page. A blocked or offline script must never break a page or slow first paint.
 - Nothing third-party goes on `/admin`.
-- Public IDs (Umami website ID, Chatwoot website token) go in `wrangler.jsonc` `vars`. Real secrets (API keys, webhook secrets) are Worker **Secrets** and stay on the worker, never in the browser.
+- Public IDs (Umami website ID, Chatwoot API inbox identifier) go in `wrangler.jsonc` `vars`. Real secrets (API keys, webhook secrets) are Worker **Secrets** and stay on the worker, never in the browser.
 - If the site ever adds a Content-Security-Policy, it has to allow `analytics.huismax.com` and `chat.huismax.com`.
 
 ## Analytics (Umami)
@@ -48,7 +48,7 @@ Status: **live once merged.** Website ID `40d0a0b8-a849-4f29-b66e-85cfb3b35e92` 
 | `muse-board` {board} | /muse Amazon board links | Which hardware people buy |
 | `reply-sent` | /reply, on success only | Contact conversion |
 | `dj-request-sent` | /dj, on success only | Engagement with the channel |
-| `chat-open` | the chat opened, once per visit | Demand for chat or support (conversations themselves are counted in Chatwoot) |
+| `chat-start` | homepage chat_, a visitor's first message | Conversations started from the site (the messages themselves are counted in Chatwoot) |
 | `listen-live` | starting the live stream (any button) | Audience for live sets |
 | `outbound` {host} | any other external link | Where visitors go next |
 
@@ -60,23 +60,18 @@ Worth setting up in Umami later (server side): goals or funnels for /muse → `m
 
 **OpenClaw is deprecated.** It is not part of the architecture. Don't build anything on it, and don't treat it as the AI backend.
 
-Status: **live; the only chat.** Every `[data-chat-open]` button opens Chatwoot (`client/lib/support.ts`, styles in `client/styles/chat.css`); without `CHATWOOT_WEBSITE_TOKEN` they lead to /reply. Inbox "huismax.com", id 1, Chatwoot 4.18.0, HMAC off (there are no logged-in visitors; if that changes, turn HMAC on and sign in the Worker).
+Status: **built.** API inbox "huismax.com live chat" (id 2, identifier `riwdAsAJffyUNYbe9imTL1oj`). The chat is the homepage's own `chat_` section (`client/lib/talk.ts`), live both ways: Chatwoot's public client API for an **API-channel inbox** (`CHATWOOT_INBOX_ID` in `wrangler.jsonc` `vars`) and its websocket `/cable`. Max answers from Chatwoot (phone app notifications). The header's `chat` is a link to `/#chat`; without `CHATWOOT_INBOX_ID` there's no chat_ and it links to /reply. Chatwoot's website widget (inbox "huismax.com", id 1) is no longer used by the site; its code was removed.
 
-- The SDK loads on intent (hover, focus or a click on a chat button), or at idle when the browser already has a conversation (`cw_conversation` cookie). If it can't load within 12 s, the button goes to /reply.
-- On desktop (668px and up) the widget is the site's right-hand side panel under the header, square and with a 1px line. On phones, Chatwoot's own full-screen window. The widget's colour scheme follows the site's theme toggle.
-- This SDK version has no message events, only `ready`, `opened`, `closed`, `error` and `postback`. So the site can count opens, not messages.
-- Welcome text, away message, reply time, pre-chat form and widget colour are inbox settings on the server, not in this repo.
+- No away messages, reply-time promises or "AI" wording on the site: it's Max, live.
+- Chatwoot's websocket events used: `message.created`, `message.updated`, `conversation.typing_on/off`. Private notes and activity messages are never shown.
 
 The old OpenClaw "AI assistant" chat (its client, `/api/chat`, `bridge/`, `CHAT_BRIDGE_URL` / `CHAT_BRIDGE_SECRET`) has been removed from the repo. The two Worker variables can be deleted in the Cloudflare dashboard.
 
-Plan:
-1. Chatwoot is the conversation and support platform: a Website inbox on chat.huismax.com, with Max (and later others) answering from Chatwoot.
-2. Done: the site keeps its own "chat" buttons and look, with Chatwoot's launcher hidden (`hideMessageBubble`).
-3. Human takeover is how Chatwoot works anyway. When an AI responder comes, it is an Agent Bot that hands the conversation to a person (status → open) whenever it should.
-4. Later: an AI responder through n8n (Chatwoot webhook → n8n → a current AI backend → reply through the Chatwoot API), set up by Server Claude.
-5. Done: the legacy chat code is gone. Server Claude still has to retire the bridge service and its tunnel route (see below).
+## Open tools (homepage tools_)
 
-Public config: `CHATWOOT_WEBSITE_TOKEN` in `wrangler.jsonc` `vars` (the base URL is `https://chat.huismax.com`).
+Services on the server that visitors can use without an account, listed in `/admin` → homelab → open tools. Only things safe for strangers, each isolated from Max's data, resource-limited and rate-limited at Cloudflare. Never: n8n, Chatwoot, Mautic, ERPNext/Odoo, Nextcloud admin, Grafana editing, Homepage, Proxmox, or anything that runs user code on the host. Today: MiroTalk (meet.huismax.com, `{room}` links), Excalidraw (draw.huismax.com), IT-Tools (tools.huismax.com), Stirling-PDF (pdf.huismax.com, 50 MB), PrivateBin (paste.huismax.com, pastes expire within a week).
+
+Later: an AI responder through n8n (Chatwoot webhook → n8n → a current AI backend → reply through the Chatwoot API, as an Agent Bot that hands over to Max), set up by Server Claude. The site needs no change for it: replies arrive over the same websocket.
 
 ## Marketing (Mautic)
 
@@ -84,10 +79,9 @@ Nothing feeds Mautic yet, and /reply messages and DJ requests are personal messa
 
 ## Open server requests
 
-- Chatwoot outgoing email: no SMTP yet, so visitors who leave an email don't get replies by email. Recommended: Resend SMTP (the site already uses Resend for /reply), sender `no-reply@huismax.com`. Waiting on Max.
 - Retire the OpenClaw chat bridge (`chat-bridge` service on 127.0.0.1:8790) and its tunnel hostname `chat-bridge.huismax.com`: the site no longer calls it.
 - Later: n8n → Chatwoot AI responder.
 
-Done on the server (2026-10-13): `GET https://api.huismax.com/v1/host` (the homepage's homelab_ card; the server is an Ubuntu VM on Proxmox, so no CPU temperature or RAM type); Penpot at https://design.huismax.com and Mautic at https://mautic.huismax.com with secure cookies (n8n too), so all three only log in over their https domains.
+Done on the server (2026-10-13): `GET https://api.huismax.com/v1/host` (the homepage's homelab_ card: the Dell OptiPlex Micro 7010 itself, `serverId` docker-server for the sparklines; no CPU temperature from inside the VM); the open tools on draw., tools., pdf. and paste.huismax.com; Penpot at https://design.huismax.com and Mautic at https://mautic.huismax.com with secure cookies (n8n too), so all three only log in over their https domains.
 
-Chatwoot inbox settings (done): widget colour `#737373` (readable in both themes), "hi, it's max" welcome, reply time "in a few hours", business hours off (so the away message never shows), and a pre-chat form with one optional email field. "Powered by Chatwoot" stays: hiding it is a paid feature, and site CSS can't reach into the iframe.
+Chatwoot: the API inbox "huismax.com live chat" (id 2) has push notifications on for Max; the site shows no away message or reply-time promise.

@@ -66,9 +66,10 @@ export const DJ = ({ live, sessions, requests, ready, intro }: { live: LiveStatu
 
       {ready && <Requests picked={requests} />}
 
-      <section class="archive" aria-label="archive">
-        <h2 class="section-label mono">archive</h2>
-        {list.length ? (
+      {/* no sessions yet: the console above already says so ("first transmission soon") */}
+      {list.length > 0 && (
+        <section class="archive" aria-label="archive">
+          <h2 class="section-label mono">archive</h2>
           <ol class="mixes">
             {list.map((m) => (
               <li class="mix" data-session={m.number}>
@@ -110,13 +111,8 @@ export const DJ = ({ live, sessions, requests, ready, intro }: { live: LiveStatu
               </li>
             ))}
           </ol>
-        ) : (
-          <div class="archive-empty">
-            <p class="archive-empty-title">NO ARCHIVE YET</p>
-            <p class="mono dim">first transmission soon</p>
-          </div>
-        )}
-      </section>
+        </section>
+      )}
       <Data id="mix-data" value={list.map((m) => ({ id: m.id, no: no(m.number), title: m.title, audioUrl: m.audioUrl }))} />
     </div>
   );

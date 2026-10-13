@@ -127,7 +127,10 @@ test('api.huismax.com: five endpoints put together, LAN addresses dropped, the l
     '/containers': { containers: [{ name: 'nextcloud-nextcloud-1', status: 'running', cpu_percent: 0.2, memory_bytes: 2.6e9, last_seen: 1791184407 }, { name: 'lan-dns', status: 'exited', cpu_percent: 0, memory_bytes: 0 }] },
     '/system-info': { systems: [{ id: 'docker-server', name: 'Docker Server', hostname: 'huismax', role: 'Primary Docker Application Server', virtualization: 'KVM', hypervisor: 'Proxmox VE', os: { name: 'Ubuntu', version: '26.04.1 LTS', kernel: '7.0.0-38-generic', architecture: 'x86_64' }, cpu: { model: 'Intel Core i5-13600T', vcpus: 8, cores: 8 }, memory: { total_gib: 22, swap_gib: 8 }, network: { primary_interface: 'ens18', ipv4: '192.168.50.68' }, docker: { engine: '29.1.3' } }] },
   };
-  const series = (v: number) => ({ series: [{ metric: { instance: '192.168.50.68' }, values: [{ timestamp: Date.now() / 1000 - 60, value: v }, { timestamp: Date.now() / 1000, value: v + 1 }] }] });
+  // one whole-second clock for every metric, as Prometheus' range queries answer (aligned steps): built per request
+  // from Date.now(), the four series could land a millisecond apart and never line up
+  const t0 = Math.floor(Date.now() / 1000);
+  const series = (v: number) => ({ series: [{ metric: { instance: '192.168.50.68' }, values: [{ timestamp: t0 - 60, value: v }, { timestamp: t0, value: v + 1 }] }] });
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input instanceof Request ? input.url : input));
     asked.push(`${url.pathname}${url.search} ${new Headers(init?.headers).get('authorization')}`);
@@ -199,10 +202,12 @@ const rawHost = (over: Record<string, unknown> = {}) => ({
 });
 
 test('host: read like a server (clamped, masked, junk dropped); health from age and load', () => {
-  const x = readHost(rawHost())!;
+  const x = readHost(rawHost({ hardware: { ...rawHost().hardware, cores: 14, threads: 20, vcpus: 14 } }))!;
+  assert.deepEqual([x.hardware.cores, x.hardware.threads, x.hardware.vcpus], [14, 20, 14], 'the chip, and what the VM gets');
   assert.equal(x.cpu.usage, 100);
   assert.equal(x.hardware.model, 'custom build at •••');
   assert.equal(x.hardware.drives.length, 1);
+  assert.equal(x.hardware.model, 'custom build at •••');
   assert.ok(!('token' in x));
   assert.equal(readHost('junk'), null);
   assert.equal(assessHost(x, Date.now()), 'degraded', 'cpu at 100%');
@@ -224,6 +229,7 @@ test('/api/homelab/host: demo, /v1/host when the API has it, else its bare-metal
   assert.equal(demo.source, 'demo');
   assert.equal(demo.hardware.drives.length, 3);
   assert.ok(demo.memory.total > 0 && demo.storage.total > 0 && demo.uptime > 0);
+  assert.ok(demo.trend.cpu.length > 10, 'the last hour, from its server’s history');
 
   // the API as it is today (no /v1/servers): the fallback reads its existing endpoints
   let role = 'docker host';

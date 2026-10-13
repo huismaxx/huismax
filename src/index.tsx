@@ -18,7 +18,7 @@ import { cacher, checkServices, history as homelabHistory, host as homelabHost, 
 import { RANGES, type Range } from './lib/homelab-types';
 import { radioStatus } from './lib/radio';
 import { adminData, type AdminData } from './lib/admin-data';
-import { Layout, type PageKey } from './views/layout';
+import { CHATWOOT_TOKEN, Layout, type PageKey } from './views/layout';
 import { Home } from './views/pages/home';
 import { Album } from './views/pages/album';
 import { DJ } from './views/pages/dj';
@@ -63,7 +63,7 @@ async function page(c: C, key: PageKey, title: string | undefined, body: (live: 
   if (cmsKey && !s.settings.pages[cmsKey] && !(await isAdmin(c))) return notFound(c);
   const description = (cmsKey && s.settings.intros[cmsKey]) || s.settings.description;
   return c.html(
-    <Layout page={key} title={title} description={description} live={live} site={s} analytics={c.env.UMAMI_WEBSITE_ID?.trim()} support={c.env.CHATWOOT_WEBSITE_TOKEN?.trim()}>
+    <Layout page={key} title={title} description={description} live={live} site={s} analytics={c.env.UMAMI_WEBSITE_ID?.trim()} inbox={c.env.CHATWOOT_INBOX_ID?.trim()}>
       {await body(live, s)}
     </Layout>,
     status,
@@ -75,12 +75,13 @@ const intro = (s: Site, k: cms.PageKeyCms) => s.settings.intros[k];
 /* ——— pages ——— */
 
 app.get('/', async (c) => {
-  const [presence, spotifyUser, rows, projects, now] = await Promise.all([
+  const [presence, spotifyUser, rows, projects, now, tools] = await Promise.all([
     getPresence(c.env),
     configured(c.env) ? connectedAs(c.env) : null,
     identities(c.env),
     items(c.env, 'projects'),
     items(c.env, 'now'),
+    items(c.env, 'tools'),
   ]);
   return page(c, 'home', undefined, (live, s) => (
     <Home
@@ -91,6 +92,8 @@ app.get('/', async (c) => {
       identities={rows}
       projects={projects}
       now={now}
+      tools={tools.filter((t) => /^https:\/\//.test(String(t.url)))}
+      talk={CHATWOOT_TOKEN.test(c.env.CHATWOOT_INBOX_ID?.trim() ?? '')}
     />
   ));
 });
@@ -663,6 +666,15 @@ app.get('/api/homelab/host', async (c) => {
   } catch (e) {
     return unreachable(c, e);
   }
+});
+
+// the homepage's tools_: up or not, about once a minute whoever is looking ({room} links: the site itself)
+app.get('/api/tools', async (c) => {
+  const list = (await items(c.env, 'tools'))
+    .map((t) => ({ id: String(t.id), url: String(t.url).replace(/\{room\}.*$/, '') }))
+    .filter((t) => /^https:\/\//.test(t.url));
+  const checked = await homelabCache(c)(`tools:${list.map((t) => t.id).join(',')}`, 60, () => checkServices(list));
+  return fresh({ checkedAt: checked.fetchedAt, tools: checked.data });
 });
 
 app.get('/api/homelab/services', async (c) => {

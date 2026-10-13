@@ -136,6 +136,19 @@ export const COLLECTIONS = {
       t('description', 'what it is', 120, { hint: 'one short line, e.g. Nextcloud. Files and calendars.' }),
     ],
   },
+  // homepage tools_: services on Max's server anyone can use, no account (video calls, …)
+  tools: {
+    table: 'tools',
+    flag: 'visible',
+    flagDefault: 1,
+    order: 'sort',
+    fields: [
+      t('name', 'name', 40, { required: true, hint: 'e.g. video calls' }),
+      { name: 'url', type: 'url', label: 'opens', max: 300, required: true, hint: 'https://meet.huismax.com/join/{room}: {room} becomes a fresh random name' },
+      t('description', 'what visitors can do', 160, { hint: 'one line, e.g. Free video calls. No account, no app.' }),
+      t('action', 'button', 24, { hint: 'e.g. start a call' }),
+    ],
+  },
   links: {
     table: 'links',
     flag: 'visible',

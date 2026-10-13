@@ -1,7 +1,7 @@
 import { PageHead } from '../components/head';
 import { isOpen, useSite } from '../components/site';
 
-const ROUTES = ['/', '/photographer', '/hiking', '/dj', '/vibe-coder', '/music', '/now', '/reply'];
+const ROUTES = ['/', '/photographer', '/hiking', '/dj', '/vibe-coder', '/music', '/now', '/homelab', '/muse', '/reply'];
 
 export const NotFound = ({ path }: { path: string }) => {
   const site = useSite();

@@ -147,7 +147,15 @@ Umami at analytics.huismax.com, without cookies. `UMAMI_WEBSITE_ID` in `wrangler
 
 ## Chat
 
-The site's chat buttons (`chat` in the header, `chat with max` on the homepage) open Chatwoot at chat.huismax.com, where Max answers. `client/lib/support.ts` loads Chatwoot's widget when a visitor shows intent (hover, focus or click), hides Chatwoot's own launcher, and shows the window as the site's side panel (styles in `client/styles/chat.css`). If Chatwoot can't be reached within 12 s, or `CHATWOOT_WEBSITE_TOKEN` (public, `wrangler.jsonc` `vars`) is empty, the buttons lead to `/reply`. Inbox settings (welcome text, colour, pre-chat form) live in Chatwoot, not here. See CLAUDE.md.
+The homepage's `chat_` section is a live chat with Max in the site's own design (`client/lib/talk.ts`). Chatwoot at chat.huismax.com is only the backend: the browser uses Chatwoot's public client API for an **API-channel inbox** (`CHATWOOT_INBOX_ID`, public, `wrangler.jsonc` `vars`) and its websocket (`wss://chat.huismax.com/cable`), so Max's replies and "typing…" appear the moment he sends them from Chatwoot (web or phone app, which notifies him).
+
+- The contact and conversation are created on the first message and kept in the browser (localStorage). The socket stays open while visitors browse; a reply on another page puts a red dot on the header's `chat` button, which leads back to `/#chat`.
+- If the socket can't connect, it polls every 10 s. A message that fails to send can be tapped to retry.
+- The header's `chat` is a plain link to `/#chat` (scripts make it scroll there and focus the box). Without `CHATWOOT_INBOX_ID` there is no chat_ section and it links to `/reply`.
+
+## Tools
+
+The homepage's `tools_` lists services on Max's server that anyone can use without an account (edited in `/admin` → homelab → open tools; table `tools`). Each shows whether it's up (`GET /api/tools`, checked about once a minute). A link with `{room}` (e.g. `https://meet.huismax.com/join/{room}`) gets a fresh random room on every click. Only add things that are safe for strangers: never an admin page, n8n, Chatwoot, Mautic or anything with a login to Max's data.
 
 ## Deploy from GitHub (Cloudflare dashboard)
 
