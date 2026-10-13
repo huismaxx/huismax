@@ -34,9 +34,9 @@ Rules:
 
 ## Analytics (Umami)
 
-Status: **built, waiting on the website ID.** Until `UMAMI_WEBSITE_ID` is set, pages carry no analytics.
+Status: **live once merged.** Website ID `40d0a0b8-a849-4f29-b66e-85cfb3b35e92` (Umami 3.4.0). Without `UMAMI_WEBSITE_ID`, pages carry no analytics.
 
-- `src/views/layout.tsx` adds `https://analytics.huismax.com/script.js` (`defer`, `data-domains="huismax.com"`) only when `UMAMI_WEBSITE_ID` (a UUID, in `wrangler.jsonc` `vars`) is set. So local dev and branch previews (which get no vars) aren't counted. The ID is public; commit it in `wrangler.jsonc`, since a value there overrides one set in the dashboard on every deploy.
+- `src/views/layout.tsx` adds `https://analytics.huismax.com/stats.js` (the server's name for Umami's `script.js`, less often blocked; `defer`, `data-domains="huismax.com"`) only when `UMAMI_WEBSITE_ID` (a UUID, in `wrangler.jsonc` `vars`) is set. So local dev and branch previews (which get no vars) aren't counted. The ID is public; commit it in `wrangler.jsonc`, since a value there overrides one set in the dashboard on every deploy.
 - Umami counts page views itself, router navigations included (it follows `pushState`). It also records referrers and `utm_*`, so campaign links need no code.
 - All events go through `client/lib/track.ts`: `track(name, props)` for code, `data-track="name"` plus `data-track-*` properties on links. Any other link to another site sends `outbound` {host}. Without Umami, every call does nothing.
 - Add an event only when it answers a real question. Add it to `TrackEvent` and to this table. Use kebab-case names and small properties. Never send message text, names or emails.
@@ -48,7 +48,7 @@ Status: **built, waiting on the website ID.** Until `UMAMI_WEBSITE_ID` is set, p
 | `muse-board` {board} | /muse Amazon board links | Which hardware people buy |
 | `reply-sent` | /reply, on success only | Contact conversion |
 | `dj-request-sent` | /dj, on success only | Engagement with the channel |
-| `chat-start` | first message of a chat session | Demand for chat or support |
+| `chat-open` | the chat opened, once per visit | Demand for chat or support (conversations themselves are counted in Chatwoot) |
 | `listen-live` | starting the live stream (any button) | Audience for live sets |
 | `outbound` {host} | any other external link | Where visitors go next |
 
@@ -60,16 +60,23 @@ Worth setting up in Umami later (server side): goals or funnels for /muse → `m
 
 **OpenClaw is deprecated.** It is not part of the architecture. Don't build anything on it, and don't treat it as the AI backend.
 
-The current "live chat" (`client/lib/chat.ts`, `client/lib/assistant-api.ts`, `src/lib/chat.ts`, `/api/chat`, `bridge/`, `CHAT_BRIDGE_URL` / `CHAT_BRIDGE_SECRET`) is **legacy**. It stays until Chatwoot replaces it, then it gets removed. Don't add features to it.
+Status: **built.** With `CHATWOOT_WEBSITE_TOKEN` set, every `[data-chat-open]` button opens Chatwoot (`client/lib/support.ts`, styles at the end of `client/styles/chat.css`). Inbox "huismax.com", id 1, Chatwoot 4.18.0, HMAC off (there are no logged-in visitors; if that changes, turn HMAC on and sign in the Worker).
+
+- The SDK loads on intent (hover, focus or a click on a chat button), or at idle when the browser already has a conversation (`cw_conversation` cookie). If it can't load within 12 s, the button goes to /reply.
+- On desktop (668px and up) the widget is the site's right-hand side panel under the header, square and with a 1px line. On phones, Chatwoot's own full-screen window. The widget's colour scheme follows the site's theme toggle.
+- This SDK version has no message events, only `ready`, `opened`, `closed`, `error` and `postback`. So the site can count opens, not messages.
+- Welcome text, away message, reply time, pre-chat form and widget colour are inbox settings on the server, not in this repo.
+
+The old "live chat" (`client/lib/chat.ts`, `client/lib/assistant-api.ts`, `src/lib/chat.ts`, `/api/chat`, `bridge/`, `CHAT_BRIDGE_URL` / `CHAT_BRIDGE_SECRET`) is **legacy**. Right now it only runs when no Chatwoot token is set. Once Chatwoot has worked in production for a while, remove it. Don't add features to it.
 
 Plan:
 1. Chatwoot is the conversation and support platform: a Website inbox on chat.huismax.com, with Max (and later others) answering from Chatwoot.
-2. The site keeps its own header "live chat" button and look. It loads the Chatwoot SDK lazily (on the first click, or when idle), sets `hideMessageBubble: true` so Chatwoot's launcher never shows, and opens the widget with `$chatwoot.toggle('open')`. The widget's colour, position and greeting follow huismax (dark/light, Geist).
+2. Done: the site keeps its own "live chat" button and look, with Chatwoot's launcher hidden (`hideMessageBubble`).
 3. Human takeover is how Chatwoot works anyway. When an AI responder comes, it is an Agent Bot that hands the conversation to a person (status → open) whenever it should.
 4. Later: an AI responder through n8n (Chatwoot webhook → n8n → a current AI backend → reply through the Chatwoot API), set up by Server Claude.
 5. Once Chatwoot works on the site, remove the legacy chat code, `/api/chat`, `bridge/` and its env vars, and ask Server Claude to retire the bridge service and its tunnel route.
 
-Public config: `CHATWOOT_WEBSITE_TOKEN` in `wrangler.jsonc` `vars` (the base URL is `https://chat.huismax.com`). `chat-start` keeps meaning "a visitor started a conversation".
+Public config: `CHATWOOT_WEBSITE_TOKEN` in `wrangler.jsonc` `vars` (the base URL is `https://chat.huismax.com`).
 
 ## Marketing (Mautic)
 
@@ -77,5 +84,5 @@ Nothing feeds Mautic yet, and /reply messages and DJ requests are personal messa
 
 ## Open server requests
 
-- Umami: create the huismax.com website, send back its ID, and confirm the script and collect endpoint are public (sent).
-- Chatwoot: a Website inbox for huismax.com, its website token, the allowed domain, and confirmation that the SDK and widget can be embedded (sent).
+- Chatwoot inbox polish (sent): widget colour that works in dark mode, welcome text in Max's voice, reply time, away message, an optional email in the pre-chat form, and outgoing email for replies.
+- Later: Penpot and Mautic public URLs (before any Mautic form or tracking goes on the site); n8n → Chatwoot AI responder.

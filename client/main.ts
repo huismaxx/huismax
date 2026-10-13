@@ -1,4 +1,4 @@
-import { $, Scope } from './lib/dom';
+import { $, readJSON, Scope } from './lib/dom';
 import { proximity } from './lib/proximity';
 import { spotify } from './lib/spotify';
 import { paintListening } from './lib/listening';
@@ -7,6 +7,7 @@ import { startRouter } from './lib/router';
 import { startPalette } from './lib/palette';
 import { startMenu } from './lib/menu';
 import { startChat } from './lib/chat';
+import { startSupport } from './lib/support';
 import { startAudioBar, playLive } from './lib/audiobar';
 import { startTracking } from './lib/track';
 import { initHome } from './pages/home';
@@ -53,7 +54,9 @@ const router = startRouter({
 
 startPalette(router.navigate);
 startMenu(router.navigate);
-const chat = startChat();
+// Chatwoot when the site has a website token; the legacy chat (to be removed) otherwise
+const chatwoot = readJSON<{ chatwoot?: string }>('chat-config')?.chatwoot;
+const chat = chatwoot ? startSupport(chatwoot, router.navigate) : startChat();
 startAudioBar(router.navigate);
 startLivePolling();
 startTracking();

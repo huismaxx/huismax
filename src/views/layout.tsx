@@ -17,12 +17,16 @@ type Props = {
   site: Site;
   /** Umami website ID (UMAMI_WEBSITE_ID). Unset: no analytics script at all. */
   analytics?: string;
+  /** Chatwoot website token (CHATWOOT_WEBSITE_TOKEN). Set: the chat buttons open Chatwoot; unset: the legacy chat. */
+  support?: string;
   children: Child;
 };
 
-const UMAMI_SCRIPT = 'https://analytics.huismax.com/script.js';
+// stats.js is the same tracker as script.js, under a name ad blockers don't list
+const UMAMI_SCRIPT = 'https://analytics.huismax.com/stats.js';
 // A UUID or nothing: the ID goes into the page as an attribute.
 const UMAMI_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const CHATWOOT_TOKEN = /^[A-Za-z0-9]{12,64}$/;
 
 // Runs before paint so the stored theme never flashes.
 // Also marks the page as scripted, so the homepage headline can wait for its typewriter instead of flashing.
@@ -30,7 +34,7 @@ const themeBoot = `document.documentElement.classList.add('js');try{var t=localS
 
 const json = (v: unknown) => raw(JSON.stringify(v).replace(/</g, '\\u003c'));
 
-export const Layout = ({ page, title, description, live, site, analytics, children }: Props) => {
+export const Layout = ({ page, title, description, live, site, analytics, support, children }: Props) => {
   const s = site.settings;
   const fullTitle = title ? `${title} — huismax` : 'huismax';
   const desc = description || s.description || s.headline;
@@ -109,6 +113,7 @@ export const Layout = ({ page, title, description, live, site, analytics, childr
         <div class="sr-only" aria-live="polite" data-route-announcer />
         <script type="application/json" id="site-nav">{json(clientNav)}</script>
         {/* the label only ever says LIVE: "off air" is never shown on the public site */}
+        {support && CHATWOOT_TOKEN.test(support) && <script type="application/json" id="chat-config">{json({ chatwoot: support })}</script>}
         <script type="application/json" id="live-initial">{json({ ...live, label: live.isLive ? 'LIVE' : '' })}</script>
       </body>
     </html>
