@@ -15,7 +15,7 @@ import { allowed, emailMessage, listMessages, saveMessage, underCap, validateRep
 import { REQUEST_LIMIT, saveRequest, underRequestCap, validateRequest } from './lib/requests';
 import { chat } from './lib/chat';
 import { findLyrics, type Lyrics } from './lib/lyrics';
-import { cacher, checkServices, history as homelabHistory, overview as homelabOverview, SERVER_ID } from './lib/homelab';
+import { cacher, checkServices, history as homelabHistory, host as homelabHost, overview as homelabOverview, SERVER_ID } from './lib/homelab';
 import { RANGES, type Range } from './lib/homelab-types';
 import { radioStatus } from './lib/radio';
 import { adminData, type AdminData } from './lib/admin-data';
@@ -657,6 +657,17 @@ app.get('/api/homelab', async (c) => {
   if (!(await homelabOpen(c))) return fresh({ error: 'not found' }, 404);
   try {
     return fresh(await homelabOverview(c.env, selfUrl(c), homelabCache(c)));
+  } catch (e) {
+    return unreachable(c, e);
+  }
+});
+
+// the physical machine as a whole: the homepage's homelab_ card
+app.get('/api/homelab/host', async (c) => {
+  if (!(await homelabOpen(c))) return fresh({ error: 'not found' }, 404);
+  try {
+    const h = await homelabHost(c.env, selfUrl(c), homelabCache(c));
+    return h ? fresh(h) : fresh({ error: 'no host reported' }, 404);
   } catch (e) {
     return unreachable(c, e);
   }

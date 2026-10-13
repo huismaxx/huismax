@@ -139,6 +139,7 @@ The server data comes from the Huismax Monitoring API, `MONITORING_API_URL` = `h
 - The worker asks the API, keeps only known fields and masks addresses. Answers are cached at the edge: 15 s for servers, 1–15 min for history.
 - The last good answer is kept for a week; when the API stops answering, the page shows it marked "stale".
 - `GET /api/homelab`, `GET /api/homelab/<id>/history?range=1h|24h|7d` and `GET /api/homelab/services` are what the page polls. They return 404 while the page is hidden in /admin.
+- The homepage's `homelab_` card is the physical server as a whole (hardware, overall CPU / RAM / disk, uptime), from `GET /api/homelab/host` (the API's `/v1/host`). It stays hidden while there's no host to show.
 
 ## Live chat
 

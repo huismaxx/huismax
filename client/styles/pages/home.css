@@ -92,72 +92,70 @@
 }
 .mood-caption:not(:empty)::after { content: '▮'; margin-left: 2px; animation: blink 1s steps(1) infinite; }
 
-/* ——— channel strip ——— */
-.channel-strip {
-  display: flex;
-  align-items: center;
-  gap: clamp(12px, 2.4vw, 32px);
-  padding: 22px 0;
-  border-bottom: 1px solid var(--line);
-}
-.channel-name { font-weight: 500; letter-spacing: -0.01em; }
-.channel-name:hover { text-decoration: underline; text-underline-offset: 4px; }
-.channel-session { flex: 1; color: var(--fg-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.channel-strip[data-live='on'] .channel-session { color: var(--fg); }
-.channel-listen {
-  font: 500 var(--t-sm)/1 var(--font-mono);
-  padding: 10px 16px;
-  border-radius: 999px;
-  background: var(--fg);
-  color: var(--bg);
-  transition: transform var(--fast) var(--ease);
-}
-.channel-listen:hover { transform: translateX(3px); }
-
-/* ——— index grid ——— */
+/* ——— index: now_ · homelab_ · projects_ (cells without content aren't rendered, the rest share the row) ——— */
 .home-index {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
   border-bottom: 1px solid var(--line);
 }
 .index-cell {
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 28px 24px 36px 0;
-  min-height: 220px;
   font-size: var(--t-sm);
   transition: background var(--mid) var(--ease);
 }
 .index-cell + .index-cell { padding-left: 24px; border-left: 1px solid var(--line); }
+.index-host { flex-grow: 1.6; }
 a.index-cell:hover { background: var(--bg-2); }
-.index-label { color: var(--fg-3); margin-bottom: 8px; }
+.index-label { color: var(--fg-3); margin-bottom: 8px; display: flex; justify-content: space-between; gap: 12px; }
 .index-list { display: grid; gap: 6px; color: var(--fg-2); overflow-wrap: anywhere; }
 .index-list .mono { margin-right: 4px; }
 .index-big { font-size: var(--t-lg); letter-spacing: -0.02em; line-height: 1.1; }
-.index-cell .eq { margin-top: auto; }
-.index-link {
-  display: flex; justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--line);
-  color: var(--fg-2);
-  transition: color var(--fast), padding var(--mid) var(--ease);
-}
-.index-link:hover { color: var(--fg); padding-left: 6px; }
+
+/* homelab_: the physical server (client/pages/home-host.ts) */
+.host-health { white-space: nowrap; color: var(--fg-2); }
+.host-health[data-health='degraded'] { color: var(--fg); }
+.host-health[data-health='down'] { color: var(--live); }
+.host-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.host-specs { display: grid; gap: 4px; color: var(--fg-2); }
+.host-specs div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; }
+.host-specs dt, .host-live dt { color: var(--fg-3); font-size: var(--t-xs); }
+.host-specs dd { display: grid; overflow-wrap: anywhere; }
+.host-live { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line); }
+.host-live div { display: grid; gap: 4px; align-content: start; min-width: 0; }
+.host-live dd { display: grid; gap: 2px; }
+.host-value { font-size: var(--t-md); font-variant-numeric: tabular-nums; }
+.host-live .mono { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* projects_: Max's own work */
+.project-list { display: grid; }
+.project-item { display: grid; gap: 4px; padding: 10px 0; border-bottom: 1px solid var(--line); transition: padding var(--mid) var(--ease); }
+.project-list li:first-child .project-item { padding-top: 0; }
+a.project-item:hover { padding-left: 6px; }
+.project-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.project-name { font-size: var(--t-md); letter-spacing: -0.01em; }
+.project-status { font-size: var(--t-xs); white-space: nowrap; }
+.project-note { line-height: 1.4; }
 
 @media (max-width: 960px) {
   .hero-inner { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'who' 'now' 'side'; grid-template-rows: auto; align-items: start; }
-  .home-index { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .index-cell:nth-child(3) { padding-left: 0; border-left: 0; }
-  .index-cell:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  /* homelab_ gets the whole first row, now_ and projects_ share the second */
+  .home-index { flex-wrap: wrap; }
+  .home-index .index-host { order: -1; flex-basis: 100%; padding-left: 0; padding-right: 0; border-left: 0; }
+  .home-index:has(.index-host:not([hidden])) .index-cell:not(.index-host) { border-top: 1px solid var(--line); }
 }
 @media (max-width: 560px) {
   .home-hero { min-height: auto; padding-top: 56px; padding-bottom: 56px; }
-  .channel-strip { flex-wrap: wrap; }
-  .channel-session { flex-basis: 100%; order: 3; }
-  .home-index { grid-template-columns: 1fr; }
-  .index-cell, .index-cell + .index-cell { padding: 24px 0; border-left: 0; min-height: 0; }
-  .index-cell + .index-cell { border-top: 1px solid var(--line); }
+  .home-index { flex-direction: column; }
+  .index-cell, .index-cell + .index-cell { flex-basis: auto; padding: 24px 0; border-left: 0; }
+  /* one column, in reading order again: now_, homelab_, projects_ */
+  .home-index .index-host { order: 0; }
+  .home-index .index-cell + .index-cell { border-top: 1px solid var(--line); }
+  .home-index:has(.index-host) .index-cell:first-child { border-top: 0; }
+  .host-live { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 560px) {
   .who { font-size: 15vw; }
@@ -178,8 +176,6 @@ a.index-cell:hover { background: var(--bg-2); }
 .presence[data-live='off'] .presence-on,
 .presence[data-live='on'] .presence-off { display: none; }
 
-.index-art { width: 72px; height: 72px; background: var(--bg-3); overflow: hidden; margin-bottom: 6px; }
-.index-art img { width: 100%; height: 100%; object-fit: cover; }
 .presence .listening { margin-top: 10px; }
 /* the hand-set now playing line (/admin) only shows while Spotify has nothing, like the admin preview */
 .presence .listening:not([hidden]) ~ [data-presence-listen] { display: none; }

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import app from '../src/index';
-import { assess, demoServers, readHistory, readServer, readServers, STALE_AFTER } from '../src/lib/homelab';
+import { assess, assessHost, demoServers, hostFromServer, isMetal, readHistory, readHost, readServer, readServers, STALE_AFTER } from '../src/lib/homelab';
 
 // /homelab's data: src/lib/homelab.ts behind /api/homelab (Monitoring API, or demo data while none is set).
 
@@ -182,4 +182,76 @@ test('api.huismax.com: five endpoints put together, LAN addresses dropped, the l
   assert.equal((await get('/api/homelab/somewhere-else/history', e)).status, 404);
   assert.ok(!asked.some((a) => a.includes('somewhere-else')));
   delete (globalThis as { caches?: unknown }).caches;
+});
+
+/* ——— the physical host: the homepage's homelab_ card ——— */
+
+const rawHost = (over: Record<string, unknown> = {}) => ({
+  name: 'atlas',
+  lastSeen: new Date().toISOString(),
+  uptimeSeconds: 86400,
+  hardware: { model: 'custom build at 10.0.0.2', cpu: 'AMD Ryzen 9 5950X', cores: 16, threads: 32, memoryBytes: 64e9, memoryType: 'DDR4', drives: [{ model: 'WD Red', kind: 'HDD', sizeBytes: 4e12 }, 'junk'] },
+  cpu: { usagePercent: 140 },
+  memory: { usedBytes: 20e9, totalBytes: 64e9 },
+  storage: { usedBytes: 1e12, totalBytes: 4e12 },
+  token: 'nope',
+  ...over,
+});
+
+test('host: read like a server (clamped, masked, junk dropped); health from age and load', () => {
+  const x = readHost(rawHost())!;
+  assert.equal(x.cpu.usage, 100);
+  assert.equal(x.hardware.model, 'custom build at •••');
+  assert.equal(x.hardware.drives.length, 1);
+  assert.ok(!('token' in x));
+  assert.equal(readHost('junk'), null);
+  assert.equal(assessHost(x, Date.now()), 'degraded', 'cpu at 100%');
+  assert.equal(assessHost(readHost(rawHost({ cpu: { usagePercent: 10 } }))!, Date.now()), 'up');
+  assert.equal(assessHost(readHost(rawHost({ lastSeen: null }))!, Date.now()), 'down');
+  // until /v1/host: the bare-metal server, never a VM or a docker host
+  const metal = readServer(raw({ role: 'hypervisor', interfaces: [{ name: 'enp6s0', speedMbps: 2500 }] }))!;
+  assert.ok(isMetal(metal));
+  assert.ok(!isMetal(readServer(raw({ role: 'docker host', system: { virtualization: 'kvm' } }))!));
+  const h = hostFromServer(metal);
+  assert.equal(h.hardware.cpu, 'x');
+  assert.equal(h.hardware.network, '2.5 GbE');
+  assert.deepEqual(h.storage, { used: 100, total: 400 });
+});
+
+test('/api/homelab/host: demo, /v1/host when the API has it, else its bare-metal server, else 404', async () => {
+  delete (globalThis as { caches?: unknown }).caches;
+  const demo = await (await get('/api/homelab/host')).json();
+  assert.equal(demo.source, 'demo');
+  assert.equal(demo.hardware.drives.length, 3);
+  assert.ok(demo.memory.total > 0 && demo.storage.total > 0 && demo.uptime > 0);
+
+  // the API as it is today (no /v1/servers): the fallback reads its existing endpoints
+  let role = 'docker host';
+  let hostAnswer: unknown = rawHost({ cpu: { usagePercent: 12 } });
+  const legacy: Record<string, () => unknown> = {
+    '/servers': () => ({ servers: [{ id: 'atlas', status: 'online', cpu_percent: 5, memory_percent: 50, memory_total_bytes: 64e9 }] }),
+    '/system-info': () => ({ systems: [{ id: 'atlas', name: 'atlas', role, cpu: { model: 'x' } }] }),
+    '/storage': () => ({}),
+    '/network': () => ({}),
+    '/containers': () => ({}),
+  };
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    const url = new URL(String(input instanceof Request ? input.url : input));
+    if (url.pathname === '/v1/host' && hostAnswer) return new Response(JSON.stringify(hostAnswer));
+    if (legacy[url.pathname]) return new Response(JSON.stringify(legacy[url.pathname]()));
+    if (url.pathname.startsWith('/history/')) return new Response(JSON.stringify({ series: [] }));
+    return new Response('{"detail":"Not Found"}', { status: 404 });
+  }) as typeof fetch;
+  const e = env({ MONITORING_API_URL: 'https://api.huismax.example' });
+  const direct = await (await get('/api/homelab/host', e)).json();
+  assert.equal(direct.source, 'api');
+  assert.equal(direct.health, 'up');
+  assert.equal(direct.hardware.cpu, 'AMD Ryzen 9 5950X');
+
+  hostAnswer = null;
+  assert.equal((await get('/api/homelab/host', e)).status, 404, 'a VM is not the host');
+  role = 'hypervisor';
+  const derived = await (await get('/api/homelab/host', e)).json();
+  assert.equal(derived.name, 'atlas');
+  assert.equal(derived.memory.total, 64e9);
 });

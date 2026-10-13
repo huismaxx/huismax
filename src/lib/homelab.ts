@@ -1,6 +1,6 @@
 import type { Env } from './env';
 import { combine, HOURS, mergeHistory, METRICS } from './homelab-api';
-import type { Container, ContainerState, Disk, Health, History, Iface, Overview, Point, Range, Server, ServiceStatus, SystemInfo, Usage } from './homelab-types';
+import type { Container, ContainerState, Disk, Drive, Health, History, Host, Iface, Meta, Overview, Point, Range, Server, ServiceStatus, SystemInfo, Usage } from './homelab-types';
 
 /**
  * /homelab's data. The worker asks the Monitoring API (MONITORING_API_URL, see MONITORING_API.md) and hands
@@ -21,11 +21,19 @@ export class MonitoringError extends Error {}
 
 /** When this isolate last found the API without the /v1 endpoints: asked again after V1_RECHECK. */
 let v1MissingAt = 0;
+/** The same for /v1/host, which the API may get on its own schedule. */
+let hostMissingAt = 0;
 const V1_RECHECK = 10 * 60_000;
 
 /* ——— where the data comes from ——— */
 
-type Source = { kind: 'api' | 'demo'; servers(): Promise<unknown>; history(id: string, range: Range): Promise<unknown> };
+type Source = {
+  kind: 'api' | 'demo';
+  servers(): Promise<unknown>;
+  history(id: string, range: Range): Promise<unknown>;
+  /** the physical machine (/v1/host); null when the API doesn't have it */
+  host(): Promise<unknown>;
+};
 
 /** The API's base URL: https, or (local dev only) http. Null when unset: demo data. */
 export function monitoringBase(env: Env, self: URL): string | null {
@@ -43,7 +51,8 @@ export function monitoringBase(env: Env, self: URL): string | null {
 
 function source(env: Env, self: URL): Source {
   const base = monitoringBase(env, self);
-  if (!base) return { kind: 'demo', servers: async () => demoServers(Date.now()), history: async (id, range) => demoHistory(id, range, Date.now()) };
+  if (!base)
+    return { kind: 'demo', servers: async () => demoServers(Date.now()), history: async (id, range) => demoHistory(id, range, Date.now()), host: async () => demoHost(Date.now()) };
   /** `optional`: a 404 is an answer (null), not an error */
   const get = async (path: string, optional = false) => {
     const headers: Record<string, string> = { Accept: 'application/json', 'User-Agent': 'huismax.com/homelab' };
@@ -88,6 +97,12 @@ function source(env: Env, self: URL): Source {
       const q = `?server=${encodeURIComponent(id)}&hours=${HOURS[range]}`;
       const [cpu, memory, network_rx, network_tx] = await Promise.all(METRICS.map((m) => get(`/history/${m}${q}`)));
       return mergeHistory({ cpu, memory, network_rx, network_tx });
+    },
+    host: async () => {
+      if (Date.now() - hostMissingAt < V1_RECHECK) return null;
+      const answer = await get('/v1/host', true);
+      if (answer === null) hostMissingAt = Date.now();
+      return answer;
     },
   };
 }
@@ -288,6 +303,83 @@ function trend(points: Point[]) {
   return { cpu: pick('cpu'), memory: pick('memory') };
 }
 
+/* ——— the physical host (the homepage's homelab_ card) ——— */
+
+/** The host as read, before its health (that depends on how old the report is). */
+export type HostBase = Omit<Host, keyof Meta | 'health'>;
+
+const drive = (v: unknown): Drive | null => {
+  const o = obj(v);
+  const d = { model: text(o.model ?? o.name, 60), kind: text(o.kind ?? o.type, 30), size: num(o.sizeBytes ?? o.size) };
+  return d.model || d.size ? d : null;
+};
+
+/** /v1/host, cleaned up like a server. */
+export function readHost(v: unknown): HostBase | null {
+  const o = obj(v);
+  if (!Object.keys(o).length) return null;
+  const hw = obj(o.hardware), cpu = obj(o.cpu);
+  const memory = usage(o.memory);
+  return {
+    name: text(o.name, 40) || text(o.hostname, 40) || 'server',
+    lastSeen: iso(o.lastSeen),
+    uptime: num(o.uptimeSeconds ?? o.uptime),
+    hardware: {
+      model: text(hw.model, 60),
+      cpu: text(hw.cpu ?? hw.cpuModel, 80),
+      cores: num(hw.cores, 0, 4096),
+      threads: num(hw.threads, 0, 8192),
+      memory: num(hw.memoryBytes ?? hw.memory) ?? memory?.total ?? null,
+      memoryType: text(hw.memoryType, 40),
+      gpu: text(hw.gpu, 60),
+      drives: arr(hw.drives).map(drive).filter((d): d is Drive => !!d).slice(0, 12),
+      network: text(hw.network, 80),
+      os: text(hw.os, 60),
+    },
+    cpu: { usage: pct(cpu.usagePercent ?? cpu.usage), temperature: num(cpu.temperatureC ?? cpu.temperature, -50, 200) },
+    memory,
+    storage: usage(o.storage),
+  };
+}
+
+/** Until the API has /v1/host: the server it lists as the bare-metal one, if any. Never a VM. */
+export const isMetal = (s: ServerBase) => /bare.?metal|physical|^none$/i.test(s.system.virtualization) || /hypervisor|physical|bare.?metal/i.test(s.role);
+
+const gbe = (mbps: number) => (mbps >= 1000 ? `${Math.round(mbps / 100) / 10} GbE` : `${mbps} Mb/s`);
+
+export function hostFromServer(s: ServerBase): HostBase {
+  const total = s.storage.reduce((a, d) => a + d.total, 0), used = s.storage.reduce((a, d) => a + d.used, 0);
+  const fastest = Math.max(0, ...s.interfaces.map((i) => i.speedMbps ?? 0));
+  return {
+    name: s.name,
+    lastSeen: s.lastSeen,
+    uptime: s.uptime,
+    hardware: {
+      model: '',
+      cpu: s.system.cpuModel,
+      cores: s.system.cores,
+      threads: s.system.threads,
+      memory: s.memory?.total ?? null,
+      memoryType: '',
+      gpu: '',
+      drives: [],
+      network: fastest ? gbe(fastest) : '',
+      os: s.system.os,
+    },
+    cpu: { usage: s.cpu.usage, temperature: s.cpu.temperature },
+    memory: s.memory,
+    storage: total ? { used, total } : null,
+  };
+}
+
+/** Down when it stopped reporting; degraded when the CPU, memory or storage is at 90% or more. */
+export function assessHost(h: HostBase, now: number): Health {
+  const age = h.lastSeen ? now - Date.parse(h.lastSeen) : Infinity;
+  if (age > STALE_AFTER) return 'down';
+  const hot = (h.cpu.usage ?? 0) >= 90 || [h.memory, h.storage].some((u) => u && share(u) >= 0.9);
+  return hot ? 'degraded' : 'up';
+}
+
 /* ——— what the pages get ——— */
 
 const HISTORY_TTL: Record<Range, number> = { '1h': 60, '24h': 300, '7d': 900 };
@@ -318,6 +410,19 @@ export async function history(env: Env, self: URL, cached: Cacher, id: string, r
   if (!(await snapshot(src, cached)).data.some((s) => s.id === id)) return null;
   const h = await pointsOf(src, cached, id, range);
   return { source: src.kind, fetchedAt: h.fetchedAt, stale: h.stale, id, range, points: h.data };
+}
+
+/** The physical host; null when the API has no /v1/host and lists no bare-metal server. */
+export async function host(env: Env, self: URL, cached: Cacher): Promise<Host | null> {
+  const src = source(env, self);
+  const got = await cached(`${src.kind}:host`, 15, async (): Promise<HostBase | null> => {
+    const direct = readHost(await src.host());
+    if (direct) return direct;
+    const metal = (await snapshot(src, cached)).data.find(isMetal);
+    return metal ? hostFromServer(metal) : null;
+  });
+  if (!got.data) return null;
+  return { source: src.kind, fetchedAt: got.fetchedAt, stale: got.stale, ...got.data, health: assessHost(got.data, Date.now()) };
 }
 
 /* ——— the self-hosted sites ——— */
@@ -460,4 +565,35 @@ export function demoHistory(id: string, range: Range, now: number) {
     points.push({ t: new Date(t).toISOString(), cpu: Math.round(v.cpu * 10) / 10, memory: Math.round(v.memory * 10) / 10, rx: Math.round(v.rx), tx: Math.round(v.tx) });
   }
   return { range, points };
+}
+
+/** The demo host: atlas from the demo servers, with the hardware /v1/host would add. */
+export function demoHost(now: number) {
+  const b = DEMO[0];
+  const v = demoAt(b, now);
+  const disks = b.storage.reduce((a, d) => ({ used: a.used + d.total * d.used, total: a.total + d.total }), { used: 0, total: 0 });
+  return {
+    name: b.name,
+    lastSeen: new Date(now - 4000).toISOString(),
+    uptimeSeconds: b.up + Math.floor((now / 1000) % 86400),
+    hardware: {
+      model: 'custom build',
+      cpu: b.system.cpuModel,
+      cores: b.system.cores,
+      threads: b.system.threads,
+      memoryBytes: b.mem[1],
+      memoryType: 'DDR4-3200 ECC',
+      gpu: '',
+      drives: [
+        { model: 'Samsung 980 Pro', kind: 'NVMe SSD', sizeBytes: 512e9 },
+        { model: 'WD Red Plus', kind: 'HDD', sizeBytes: 4e12 },
+        { model: 'WD Red Plus', kind: 'HDD', sizeBytes: 4e12 },
+      ],
+      network: '2.5 GbE',
+      os: b.system.os,
+    },
+    cpu: { usagePercent: v.cpu, temperatureC: Math.round(38 + v.cpu * 0.35) },
+    memory: { usedBytes: (v.memory / 100) * b.mem[1], totalBytes: b.mem[1] },
+    storage: { usedBytes: disks.used, totalBytes: disks.total },
+  };
 }
