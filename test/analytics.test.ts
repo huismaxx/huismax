@@ -8,7 +8,7 @@ const get = async (env: Record<string, string>, path = '/muse') => (await app.re
 test('the Umami script is on public pages only when a website ID is set', async () => {
   assert.doesNotMatch(await get({}), /analytics\.huismax\.com/);
   const html = await get({ UMAMI_WEBSITE_ID: ID });
-  assert.match(html, new RegExp(`<script defer="" src="https://analytics.huismax.com/script.js" data-website-id="${ID}" data-domains="huismax.com">`));
+  assert.match(html, new RegExp(`<script defer="" src="https://analytics.huismax.com/stats.js" data-website-id="${ID}" data-domains="huismax.com">`));
   // anything that isn't a UUID is ignored rather than written into the page
   assert.doesNotMatch(await get({ UMAMI_WEBSITE_ID: '"><script>x</script>' }), /analytics\.huismax\.com/);
 });
@@ -23,4 +23,13 @@ test('/muse download and link events', async () => {
   assert.match(html, /data-track="muse-source"/);
   assert.match(html, /data-track="muse-board" data-track-board="hosyond"/);
   assert.match(html, /data-track="muse-board" data-track-board="stick"/);
+});
+
+test('the chat buttons get Chatwoot only with a valid website token', async () => {
+  assert.doesNotMatch(await get({}, '/'), /id="chat-config"/);
+  const html = await get({ CHATWOOT_WEBSITE_TOKEN: 'AbC123xyz456DEF789' }, '/');
+  assert.match(html, /<script type="application\/json" id="chat-config">\{"chatwoot":"AbC123xyz456DEF789"\}<\/script>/);
+  assert.match(html, /chat with max </);
+  assert.doesNotMatch(await get({ CHATWOOT_WEBSITE_TOKEN: 'x"><b>' }, '/'), /id="chat-config"/);
+  assert.doesNotMatch(await get({ CHATWOOT_WEBSITE_TOKEN: 'AbC123xyz456DEF789' }, '/admin'), /chat-config|chat\.huismax/);
 });

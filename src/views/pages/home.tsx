@@ -14,6 +14,8 @@ type Props = {
   identities: Item[];
   projects: Item[];
   now: Item[];
+  /** the chat buttons open Chatwoot (Max himself) rather than the legacy AI chat */
+  support?: boolean;
 };
 
 const s = (v: unknown) => (v === undefined || v === null ? '' : String(v));
@@ -48,7 +50,7 @@ function sideLink(id: Item, project: Item | undefined) {
   return null;
 }
 
-export const Home = ({ live, presence, spotifyConnected, settings, identities, projects, now }: Props) => {
+export const Home = ({ live, presence, spotifyConnected, settings, identities, projects, now, support }: Props) => {
   const project = projects.find((p) => s(p.url));
   // a row never leads to a page the admin has hidden
   const rows = identities.filter((id) => isOpen(settings, s(id.href)));
@@ -81,7 +83,7 @@ export const Home = ({ live, presence, spotifyConnected, settings, identities, p
             <div class="home-actions">
               <button type="button" class="home-chat" data-chat-open aria-haspopup="dialog" aria-expanded="false">
                 <span class="home-chat-dot" aria-hidden="true" />
-                chat with max's ai assistant <span aria-hidden="true">→</span>
+                {support ? 'chat with max' : "chat with max's ai assistant"} <span aria-hidden="true">→</span>
               </button>
               {/* Max's open-source ESP32 project (Muse Companion): the how-to page, which links the source */}
               <a class="home-chat home-perk" href="/muse">

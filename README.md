@@ -142,11 +142,11 @@ The server data comes from the Huismax Monitoring API, `MONITORING_API_URL` = `h
 
 ## Analytics
 
-Umami at analytics.huismax.com, without cookies. Set `UMAMI_WEBSITE_ID` in `wrangler.jsonc` `vars` to the huismax.com website's ID. Until then, pages load no analytics. Events are sent from `client/lib/track.ts`, and the list of events is in CLAUDE.md.
+Umami at analytics.huismax.com, without cookies. `UMAMI_WEBSITE_ID` in `wrangler.jsonc` `vars` is the huismax.com website's ID; empty means no analytics. Events are sent from `client/lib/track.ts`, and the list of events is in CLAUDE.md.
 
 ## Live chat
 
-> **Legacy.** OpenClaw is deprecated, and this chat will be replaced by Chatwoot (chat.huismax.com) and then removed. See CLAUDE.md. Don't build on it.
+> **Legacy.** OpenClaw is deprecated. With `CHATWOOT_WEBSITE_TOKEN` set (it is), the chat buttons open Chatwoot (chat.huismax.com, `client/lib/support.ts`), and everything below only runs without it. It gets removed once Chatwoot has proven itself. See CLAUDE.md.
 
 Max's AI Assistant is an OpenClaw agent (`openclaw/website`) on Max's own server. The browser only ever talks to this site:
 

@@ -144,3 +144,23 @@ a.chat-link.mono { justify-self: start; }
   /* narrow phones: wordmark, LIVE (when on), chat and menu stay on one line */
   .chat-btn-long { display: none; }
 }
+
+/* Chatwoot (client/lib/support.ts): its window as the site's side panel, under the header (so the header's chat
+   button, which closes it, stays in reach). Phones keep Chatwoot's own full-screen window and close button.
+   `:not(.woot--hide)` leaves Chatwoot's own hiding alone. */
+@media (min-width: 668px) {
+  html body .woot-widget-holder:not(.woot--hide) {
+    top: var(--header-h) !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: min(440px, 100vw) !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    border-radius: 0 !important;
+    border-left: 1px solid var(--line);
+    border-top: 1px solid var(--line);
+    box-shadow: none !important;
+  }
+}
+[data-chat-open][aria-busy] { cursor: progress; }
