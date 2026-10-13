@@ -135,11 +135,10 @@ Verified against the production code and the live site on **2026-09-29**.
   - Hovering or focusing a row types a short caption and shifts the page's mood.
   - A row can have a small external link beside it. The Vibe coder row links to "Tapical ↗" at tapical.us.
   - Keyboard: ↑/↓ moves between rows and keys 1–9 jump to a row.
-- **Index grid:**
-  - **now:** status and Now items (links to `/now`).
-  - **listening:** current or last Spotify track (links to `/music`).
-  - **building:** project names (links to `/vibe-coder`).
-  - **elsewhere:** music, dj and reply.
+- **Index (under the hero):**
+  - **now_:** status and Now items (links to `/now`).
+  - **homelab_:** Max's physical home server as one machine: its hardware (CPU, memory, drives, network, OS) and live overall CPU, RAM, disk use and uptime, refreshed about every 15 seconds (links to `/homelab`). It only appears when the server reports in.
+  - **projects_:** Max's own projects with their status and a short note, each linking out (for example Tapical and the open-source Muse Companion).
 - **Update timing:** status and live state refresh about every 15 seconds and Spotify about every 20 seconds. A change can take up to about a minute to appear.
 
 **Current content (snapshot):**

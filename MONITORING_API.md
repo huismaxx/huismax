@@ -100,6 +100,37 @@ CPU, memory and network over time, for the charts. Ranges: `1h`, `24h` and `7d`.
 - `null` is a gap; the line breaks there.
 - The site only asks for ids that `/v1/servers` lists.
 
+#### `GET {base}/v1/host`
+
+The physical machine as a whole, for the homepage's `homelab_` card: what it's built from, and how busy it is overall. One machine, not its VMs or containers. Asked at most every 15 s per Cloudflare location.
+
+```json
+{
+  "name": "atlas",
+  "lastSeen": "2026-10-05T11:59:58Z",
+  "uptimeSeconds": 3542400,
+  "hardware": {
+    "model": "custom build",
+    "cpu": "AMD Ryzen 9 5950X", "cores": 16, "threads": 32,
+    "memoryBytes": 68719476736, "memoryType": "DDR4-3200 ECC",
+    "gpu": "",
+    "drives": [
+      { "model": "Samsung 980 Pro", "kind": "NVMe SSD", "sizeBytes": 512000000000 },
+      { "model": "WD Red Plus", "kind": "HDD", "sizeBytes": 4000000000000 }
+    ],
+    "network": "2.5 GbE",
+    "os": "Proxmox VE 8.2"
+  },
+  "cpu": { "usagePercent": 23.5, "temperatureC": 48 },
+  "memory": { "usedBytes": 40000000000, "totalBytes": 68719476736 },
+  "storage": { "usedBytes": 4700000000000, "totalBytes": 8500000000000 }
+}
+```
+
+- **Required:** `lastSeen` (older than 3 minutes: shown as down). Everything else is optional; an empty spec line is left out.
+- `hardware` is static: the API can keep it in a file. `cpu`, `memory` and `storage` are the host's own totals (storage = every data filesystem on the machine's drives added up, `/boot` left out). Drive sizes are the sold size in bytes (4 TB = 4000000000000).
+- Until the API has it (a 404), the site uses the server `/v1/servers` or `/system-info` lists as bare metal (virtualization `bare metal` / `physical` / `none`, or role `hypervisor`), and hides the card when there's none.
+
 ## What never reaches the page
 
 The Worker keeps only the fields above. Even inside them, anything that looks like an IPv4, IPv6 or MAC address is replaced with `•••`. Ports, addresses and credentials stay on your side.

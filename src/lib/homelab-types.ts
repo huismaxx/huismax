@@ -77,3 +77,37 @@ export type History = Meta & { id: string; range: Range; points: Point[] };
 
 /** The self-hosted sites on /homelab: reachable or not, checked by the worker. */
 export type ServiceStatus = { id: string; up: boolean; ms: number | null };
+
+/** One physical drive in the host, e.g. { model: 'Samsung 990 Pro', kind: 'NVMe SSD', size: 2e12 }. */
+export type Drive = { model: string; kind: string; size: number | null };
+
+/**
+ * The physical machine as a whole (the homepage's homelab_ card): what it's built from, and how busy it is overall.
+ * Not the VMs or containers on it: those stay on /homelab.
+ */
+export type Host = Meta & {
+  name: string;
+  health: Health;
+  lastSeen: string | null;
+  uptime: number | null;
+  hardware: {
+    /** the box itself, e.g. "Minisforum MS-01" or "custom build" */
+    model: string;
+    cpu: string;
+    cores: number | null;
+    threads: number | null;
+    /** installed RAM in bytes, and its kind, e.g. "DDR5-5600" */
+    memory: number | null;
+    memoryType: string;
+    gpu: string;
+    drives: Drive[];
+    /** e.g. "2× 10 GbE SFP+, 2× 2.5 GbE" */
+    network: string;
+    /** what runs on the metal, e.g. "Proxmox VE 8.2" */
+    os: string;
+  };
+  cpu: { usage: number | null; temperature: number | null };
+  memory: Usage | null;
+  /** every drive's filesystems added up */
+  storage: Usage | null;
+};

@@ -63,11 +63,8 @@ export const Home = ({ live, presence, spotifyConnected, settings, identities, p
         {children}
       </div>
     );
-  const elsewhere = [
-    ['/music', 'music'],
-    ['/dj', 'dj'],
-    ['/reply', 'reply'],
-  ].filter(([href]) => open(href));
+  // Max's own work only (CMS → projects, the vibe coder list); the homelab's tools live on /homelab
+  const work = projects.map((p) => ({ name: s(p.name), url: s(p.url), status: s(p.status), note: s(p.note) }));
 
   return (
     <>
@@ -159,7 +156,7 @@ export const Home = ({ live, presence, spotifyConnected, settings, identities, p
 
       <section class="home-index" aria-label="index">
         <Cell href="/now">
-          <span class="index-label mono">now</span>
+          <span class="index-label mono">now_</span>
           <ul class="index-list">
             <li>
               <span class="mono dim">right now</span> <span data-presence-status>{presence.status}</span>
@@ -171,24 +168,52 @@ export const Home = ({ live, presence, spotifyConnected, settings, identities, p
             ))}
           </ul>
         </Cell>
-        <Cell href="/music">
-          <span class="index-label mono" data-listening-label>listening</span>
-          <span class="index-art" aria-hidden="true"><img alt="" data-listening-art hidden /></span>
-          <span class="index-big" data-listening-name>—</span>
-          <span class="dim" data-listening-artist />
-        </Cell>
-        <Cell href="/vibe-coder">
-          <span class="index-label mono">building</span>
-          {projects.length ? projects.map((p) => <span class="index-big">{s(p.name)}</span>) : <span class="index-big dim">—</span>}
-        </Cell>
-        <div class="index-cell index-links" data-prox>
-          <span class="index-label mono">elsewhere</span>
-          {elsewhere.map(([href, label]) => (
-            <a class="index-link" href={href}>
-              {label} <span aria-hidden="true">→</span>
-            </a>
-          ))}
-        </div>
+        {/* the physical server as a whole, filled from /api/homelab/host (client/pages/home-host.ts); stays hidden without data */}
+        {open('/homelab') && (
+          <a class="index-cell index-host" data-prox href="/homelab" data-host hidden>
+            <span class="index-label mono">
+              homelab_ <span class="host-health" data-host-health />
+            </span>
+            <span class="host-name">
+              <span class="index-big" data-host-name />
+              <span class="mono dim" data-host-model />
+            </span>
+            <dl class="host-specs" data-host-specs />
+            <dl class="host-live" data-host-live />
+          </a>
+        )}
+        {work.length > 0 && (
+          <div class="index-cell index-projects" data-prox>
+            <span class="index-label mono">projects_</span>
+            <ul class="project-list">
+              {work.map((p) => {
+                const inner = (
+                  <>
+                    <span class="project-row">
+                      <span class="project-name">
+                        {p.name}
+                        {p.url && <span aria-hidden="true"> ↗</span>}
+                      </span>
+                      {p.status && <span class="project-status mono dim">{p.status}</span>}
+                    </span>
+                    {p.note && <span class="project-note dim">{p.note}</span>}
+                  </>
+                );
+                return (
+                  <li>
+                    {p.url ? (
+                      <a class="project-item" href={p.url} {...extAttrs(p.url)}>
+                        {inner}
+                      </a>
+                    ) : (
+                      <span class="project-item">{inner}</span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </section>
     </>
   );
