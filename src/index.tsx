@@ -13,7 +13,6 @@ import { identities, items, photos, requests, sessions, settings, site, type Sit
 import { deleteKeys, dim, LIMITS, putImage, readImage, serve, UploadError, validKey } from './lib/media';
 import { allowed, emailMessage, listMessages, saveMessage, underCap, validateReply } from './lib/reply';
 import { REQUEST_LIMIT, saveRequest, underRequestCap, validateRequest } from './lib/requests';
-import { chat } from './lib/chat';
 import { findLyrics, type Lyrics } from './lib/lyrics';
 import { cacher, checkServices, history as homelabHistory, host as homelabHost, overview as homelabOverview, SERVER_ID } from './lib/homelab';
 import { RANGES, type Range } from './lib/homelab-types';
@@ -92,7 +91,6 @@ app.get('/', async (c) => {
       identities={rows}
       projects={projects}
       now={now}
-      support={!!c.env.CHATWOOT_WEBSITE_TOKEN?.trim()}
     />
   ));
 });
@@ -214,13 +212,6 @@ app.post('/api/dj/requests', async (c) => {
   if (limited) return c.json({ error: limited }, 429);
   await saveRequest(c.env, r);
   return c.json({ ok: true });
-});
-
-/* ——— live chat (public) ——— */
-
-app.post('/api/chat', async (c) => {
-  if (!sameOrigin(c)) return c.json({ error: 'bad origin' }, 403);
-  return chat(c.env, c.req.raw);
 });
 
 /* ——— live + presence (public) ——— */

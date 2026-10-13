@@ -60,21 +60,21 @@ Worth setting up in Umami later (server side): goals or funnels for /muse → `m
 
 **OpenClaw is deprecated.** It is not part of the architecture. Don't build anything on it, and don't treat it as the AI backend.
 
-Status: **built.** With `CHATWOOT_WEBSITE_TOKEN` set, every `[data-chat-open]` button opens Chatwoot (`client/lib/support.ts`, styles at the end of `client/styles/chat.css`). Inbox "huismax.com", id 1, Chatwoot 4.18.0, HMAC off (there are no logged-in visitors; if that changes, turn HMAC on and sign in the Worker).
+Status: **live; the only chat.** Every `[data-chat-open]` button opens Chatwoot (`client/lib/support.ts`, styles in `client/styles/chat.css`); without `CHATWOOT_WEBSITE_TOKEN` they lead to /reply. Inbox "huismax.com", id 1, Chatwoot 4.18.0, HMAC off (there are no logged-in visitors; if that changes, turn HMAC on and sign in the Worker).
 
 - The SDK loads on intent (hover, focus or a click on a chat button), or at idle when the browser already has a conversation (`cw_conversation` cookie). If it can't load within 12 s, the button goes to /reply.
 - On desktop (668px and up) the widget is the site's right-hand side panel under the header, square and with a 1px line. On phones, Chatwoot's own full-screen window. The widget's colour scheme follows the site's theme toggle.
 - This SDK version has no message events, only `ready`, `opened`, `closed`, `error` and `postback`. So the site can count opens, not messages.
 - Welcome text, away message, reply time, pre-chat form and widget colour are inbox settings on the server, not in this repo.
 
-The old "live chat" (`client/lib/chat.ts`, `client/lib/assistant-api.ts`, `src/lib/chat.ts`, `/api/chat`, `bridge/`, `CHAT_BRIDGE_URL` / `CHAT_BRIDGE_SECRET`) is **legacy**. Right now it only runs when no Chatwoot token is set. Once Chatwoot has worked in production for a while, remove it. Don't add features to it.
+The old OpenClaw "AI assistant" chat (its client, `/api/chat`, `bridge/`, `CHAT_BRIDGE_URL` / `CHAT_BRIDGE_SECRET`) has been removed from the repo. The two Worker variables can be deleted in the Cloudflare dashboard.
 
 Plan:
 1. Chatwoot is the conversation and support platform: a Website inbox on chat.huismax.com, with Max (and later others) answering from Chatwoot.
-2. Done: the site keeps its own "live chat" button and look, with Chatwoot's launcher hidden (`hideMessageBubble`).
+2. Done: the site keeps its own "chat" buttons and look, with Chatwoot's launcher hidden (`hideMessageBubble`).
 3. Human takeover is how Chatwoot works anyway. When an AI responder comes, it is an Agent Bot that hands the conversation to a person (status → open) whenever it should.
 4. Later: an AI responder through n8n (Chatwoot webhook → n8n → a current AI backend → reply through the Chatwoot API), set up by Server Claude.
-5. Once Chatwoot works on the site, remove the legacy chat code, `/api/chat`, `bridge/` and its env vars, and ask Server Claude to retire the bridge service and its tunnel route.
+5. Done: the legacy chat code is gone. Server Claude still has to retire the bridge service and its tunnel route (see below).
 
 Public config: `CHATWOOT_WEBSITE_TOKEN` in `wrangler.jsonc` `vars` (the base URL is `https://chat.huismax.com`).
 
@@ -85,6 +85,9 @@ Nothing feeds Mautic yet, and /reply messages and DJ requests are personal messa
 ## Open server requests
 
 - Chatwoot outgoing email: no SMTP yet, so visitors who leave an email don't get replies by email. Recommended: Resend SMTP (the site already uses Resend for /reply), sender `no-reply@huismax.com`. Waiting on Max.
-- Later: Penpot and Mautic public URLs (before any Mautic form or tracking goes on the site); n8n → Chatwoot AI responder.
+- Retire the OpenClaw chat bridge (`chat-bridge` service on 127.0.0.1:8790) and its tunnel hostname `chat-bridge.huismax.com`: the site no longer calls it.
+- Later: n8n → Chatwoot AI responder.
+
+Done on the server (2026-10-13): `GET https://api.huismax.com/v1/host` (the homepage's homelab_ card; the server is an Ubuntu VM on Proxmox, so no CPU temperature or RAM type); Penpot at https://design.huismax.com and Mautic at https://mautic.huismax.com with secure cookies (n8n too), so all three only log in over their https domains.
 
 Chatwoot inbox settings (done): widget colour `#737373` (readable in both themes), "hi, it's max" welcome, reply time "in a few hours", business hours off (so the away message never shows), and a pre-chat form with one optional email field. "Powered by Chatwoot" stays: hiding it is a paid feature, and site CSS can't reach into the iframe.

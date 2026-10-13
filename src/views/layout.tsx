@@ -17,7 +17,7 @@ type Props = {
   site: Site;
   /** Umami website ID (UMAMI_WEBSITE_ID). Unset: no analytics script at all. */
   analytics?: string;
-  /** Chatwoot website token (CHATWOOT_WEBSITE_TOKEN). Set: the chat buttons open Chatwoot; unset: the legacy chat. */
+  /** Chatwoot website token (CHATWOOT_WEBSITE_TOKEN). Set: the chat buttons open Chatwoot; unset: they lead to /reply. */
   support?: string;
   children: Child;
 };
@@ -82,7 +82,7 @@ export const Layout = ({ page, title, description, live, site, analytics, suppor
               </a>
             )}
             <button class="menu-btn chat-btn" type="button" data-chat-open aria-haspopup="dialog" aria-expanded="false">
-              <span class="chat-btn-long">live </span>chat
+              chat
             </button>
             <button class="menu-btn" type="button" data-menu-open aria-haspopup="dialog">
               menu

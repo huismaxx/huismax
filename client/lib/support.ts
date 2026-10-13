@@ -3,8 +3,8 @@ import { track } from './track';
 
 /**
  * Live chat through Chatwoot (chat.huismax.com). The site keeps its own [data-chat-open] buttons; Chatwoot's
- * launcher is hidden and its window is styled as the site's side panel (chat.css). Replaces the legacy chat
- * (chat.ts) whenever a website token is configured.
+ * launcher is hidden and its window is styled as the site's side panel (chat.css). Without a website token (local
+ * dev, branch previews) the buttons lead to /reply.
  *
  * The SDK (and the widget iframe it brings) loads on intent only: hover, focus or a click on a chat button, or at
  * idle when this browser already has a conversation, so replies show up. If Chatwoot can't be reached the button
@@ -30,7 +30,7 @@ declare global {
 }
 
 export function startSupport(token: string, navigate: (href: string) => void) {
-  let state: 'idle' | 'loading' | 'ready' | 'failed' = 'idle';
+  let state: 'idle' | 'loading' | 'ready' | 'failed' = token ? 'idle' : 'failed';
   let wantOpen = false;
   let open = false;
   let timer = 0;
