@@ -1,7 +1,7 @@
 # huismax.com: Site Features Reference
 
-Knowledge file for Max's AI Assistant (the site's Live Chat agent). It describes what the public site does and how visitors use it.
-Verified against the production code and the live site on **2026-09-29**.
+Reference for anyone (or any assistant) answering questions about huismax.com. It describes what the public site does and how visitors use it.
+Verified against the production code on **2026-10-13**.
 
 **Status legend**
 - **LIVE**: works in production today.
@@ -40,7 +40,6 @@ Verified against the production code and the live site on **2026-09-29**.
   - The `huismax_` wordmark links home.
   - The nav links are home · music · dj · now · reply. On screens 720px wide or narrower they're hidden, so visitors use **menu** instead.
   - A red **● LIVE** badge (it links to `/dj`) shows only while Max is live.
-  - The **live chat** button reads just "chat" on very narrow phones.
   - The **menu** button opens the menu.
 - **Menu (full-screen overlay):**
   - The numbered pages Home, Music, DJ, Now and Reply.
@@ -59,60 +58,21 @@ Verified against the production code and the live site on **2026-09-29**.
   - While a DJ mix plays, it shows the title, a progress bar (click it to seek) and pause/resume.
   - **Space** toggles play/pause when focus isn't on a link, button or field.
   - While Max is live, **listen** on the homepage starts the set and opens `/music`, where the album art of what's playing shows. On every other page it just plays.
-- **Seamless navigation:** moving between pages doesn't reload the site, so **audio keeps playing and the chat stays open** while visitors browse.
+- **Seamless navigation:** moving between pages doesn't reload the site, so **audio keeps playing** while visitors browse.
 - **Page header:** a breadcrumb `index / <page>`, where "index" links home. Each page can show a one-line intro written by Max.
 - **Footer:** "huismax © 2026", plus any external links Max adds (currently none).
 - **Accessibility:** a "skip to content" link, screen-reader labels, and reduced-motion support (animations become still frames).
 
 ---
 
-## 3. Live Chat: Max's AI Assistant · LIVE
+## 3. Chat with Max · LIVE
 
-**How to open it:**
-- The **live chat** button in the header, on every page.
-- The **"chat with max's ai assistant →"** button on the homepage.
-- Clicking either button again closes the chat.
-
-**Layout:**
-- **Desktop and tablet:** a side panel on the right, below the header. The page stays usable, and visitors can keep browsing with the chat open.
-- **Phones (560px wide or narrower):** full screen. **close**, Esc or the back button closes it.
-
-**Inside the panel:**
-- Title "Max's AI Assistant", subtitle *"an ai, not max himself"*.
-- Greeting: *"Hi, I'm Max's AI assistant. What would you like to know about him?"*
-- Suggested questions, shown only in an empty chat: **Who is Max?**, **What is he building?**, **How can I reach him?**
-- Input field with the placeholder "ask about max". Messages can be up to 2,000 characters. Enter sends, Shift+Enter adds a new line, and Chinese/Japanese input methods work.
-- Answers stream in word by word after a "thinking" indicator. Visitors can press **stop ■** (or Esc once) to stop an answer; what arrived so far is kept and marked "stopped.". A second Esc closes the panel.
-- Only one question can run at a time.
-- **new chat** clears the conversation.
-- Footer note: *"answers can be wrong. this chat is kept in this tab only."*
-
-**Memory and privacy:**
-- The conversation is kept only in the visitor's current browser tab. It survives a reload and disappears when the tab closes.
-- The browser keeps the last 60 messages, but **only the last 8 messages go to the assistant as context** with each question.
-- The chat window has no "send to Max" feature. Anyone who wants to reach him should use **/reply**.
-
-**Error messages visitors may see:**
-- "Too many requests right now. Try again in a moment."
-- "Max's AI assistant is temporarily unavailable."
-- "This response is taking longer than expected. Please try again." (no first word within about 90 seconds, or about 45 seconds of silence mid-answer)
-- "Couldn't reach Max's AI assistant. Check your connection and try again."
-- "The answer was cut off. Please try again."
-- "Something went wrong on our side. Please try again."
-
-**How the assistant's answers are displayed (write for this):**
-- Only **paragraphs** (separated by a blank line) and **simple lists** (`-`, `*`, `•` or `1.`) are rendered.
-- Bold, italics, backticks and headings are stripped to plain text, and HTML is shown literally.
-- **Links become clickable only when they point to one of these:**
-  - An open page path: `/music`, `/dj`, `/now`, `/reply`, `/photographer`, `/hiking`, `/vibe-coder`. The homepage `/` works only inside a Markdown link.
-  - Any `https://huismax.com/...` URL.
-  - `https://tapical.us`, `https://open.spotify.com/...`, or any link shown in the site footer or on the homepage.
-- Links that stay **plain text**:
-  - Other domains, `http://` links, and `/lab`.
-  - A path to a page that's switched off.
-- A bare path followed by `#` or `?` links only the path part. For a photo deep link, use the full `https://huismax.com/photographer#<id>` URL.
-- Markdown links like `[Music](/music)` work: the label shows, and it's clickable if the target is allowed.
-- On phones and small tablets (720px wide or narrower), tapping a site link in the chat closes the chat and opens the page. Reopening the chat shows the same conversation. External links open in a new tab.
+- **How to open it:** the **chat** button in the header (every page), or **"chat with max →"** on the homepage. Clicking again closes it.
+- **Who answers:** Max himself, through Chatwoot (chat.huismax.com). It isn't an AI and replies aren't instant; the chat says he usually replies in a few hours.
+- **Layout:** on desktop and tablet a side panel on the right, below the header, so visitors can keep browsing. On phones, a full-screen chat window with its own close button.
+- **Email:** the chat can ask for an optional email address, so Max can follow up later.
+- **The conversation stays** in that browser: coming back later shows it again, with any reply.
+- **If the chat can't load** (offline, blocked), the button opens **/reply** instead.
 
 ---
 
@@ -121,7 +81,7 @@ Verified against the production code and the live site on **2026-09-29**.
 - **Headline:**
   - "WHO IS MAX?" types itself out with a blinking cursor, over a faint "code rain" of falling glyphs.
   - An optional tagline sits under it (currently none).
-- **Chat button:** "chat with max's ai assistant →" opens Live Chat.
+- **Chat button:** "chat with max →" opens the chat with Max.
 - **Status block:**
   - **Status line:** a breathing dot and Max's personal status, which he sets by hand. Examples: "building", "locked in", "touching grass", "afk", or any custom text.
   - **Spotify card:** album art, a state label ("now playing", "paused" or "last played · 2 h ago"), the track, the artist, and a progress bar while playing or paused. Clicking it opens the track on Spotify.
@@ -318,7 +278,7 @@ Use `/reply` for everything contact-related: collaborations, DJ bookings, photog
 | Spotify track cards | Links to Spotify, not an in-site player. |
 | "in rotation" / "featured" music sections | Supported but currently empty, so hidden. |
 | `/lab` | Not a page. Redirects to Reply. |
-| Live Chat | An AI assistant. The website gives it no way to message Max, book anything, or take payments. Contact goes through `/reply`. |
+| Chat | Max answers himself, usually within a few hours, not instantly. No booking or payments. |
 
 ---
 
@@ -330,17 +290,15 @@ Use `/reply` for everything contact-related: collaborations, DJ bookings, photog
 - **Snapshots go stale.** Max can edit text, reorder or hide lists, publish photos or sessions, and switch pages off. A switched-off page becomes a 404 and leaves the menus.
 - **Mobile differences:**
   - Header links are hidden at 720px wide or narrower, so visitors use **menu**.
-  - The chat is full screen at 560px or narrower.
-  - "live chat" reads "chat" at 420px or narrower.
+  - The chat is full screen on phones.
 - **Finding the hidden pages:** Photographer, Hiking and Vibe coder aren't in the menu. Hiking is currently reachable only through `/hiking`, the ⌘K palette, "random", or the 404 page's link list.
-- **Chat memory:** you only see the last 8 messages of a conversation, and it's gone when the visitor closes the tab.
-- **Contacting Max always means `/reply`,** with an email address if the visitor wants an answer.
+- **Contacting Max:** the chat, or `/reply` with an email address if the visitor wants an answer by email.
 - **Keyboard shortcuts:**
   - Anywhere: ⌘K/Ctrl+K or `/` opens the palette, and Space plays or pauses audio.
   - Homepage: ↑/↓ and 1–9 move through identities.
   - Vibe coder: ↓ and ↑ move through the project list.
   - Photo viewer: ←/→ steps through photos and Esc closes it.
-  - Chat: Enter sends, Shift+Enter adds a new line, Esc stops an answer or closes the chat.
+  - Chat: Esc closes it (when focus is on the page).
 
 ---
 
@@ -348,7 +306,7 @@ Use `/reply` for everything contact-related: collaborations, DJ bookings, photog
 
 | Feature | URL |
 |---|---|
-| Home / Live Chat button | https://huismax.com/ |
+| Home / chat button | https://huismax.com/ |
 | DJ channel (live, archive and requests) | https://huismax.com/dj |
 | Music and Spotify | https://huismax.com/music |
 | Photography | https://huismax.com/photographer |

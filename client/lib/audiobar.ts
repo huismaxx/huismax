@@ -5,6 +5,7 @@ import { readSpectrum } from './viz';
 import { playingNow, spotify } from './spotify';
 import { paintListening } from './listening';
 import { paletteLinks } from './nav';
+import { track } from './track';
 
 /** Every "listen live" button: starts the stream, then pauses and resumes it (at the live edge) instead of restarting. */
 export const playLive = () => {
@@ -15,6 +16,7 @@ export const playLive = () => {
   // the session ended while paused: nothing to resume
   if (!s.isLive) return mine ? player.stop() : undefined;
   if (mine) return player.toggle();
+  track('listen-live');
   player.play({ kind: 'live', id: 'live', title: s.sessionTitle ?? 'huismax dj channel', url: s.streamUrl });
 };
 

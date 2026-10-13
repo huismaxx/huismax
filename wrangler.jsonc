@@ -20,6 +20,11 @@
     "RADIO_STREAM_URL": "https://radio.huismax.com/live.mp3",
     // /homelab: the Monitoring API (src/lib/homelab.ts). A token, if it ever needs one: secret MONITORING_API_TOKEN.
     "MONITORING_API_URL": "https://api.huismax.com",
+    // Umami at analytics.huismax.com: the huismax.com website's ID (public). Empty: no analytics script.
+    "UMAMI_WEBSITE_ID": "40d0a0b8-a849-4f29-b66e-85cfb3b35e92",
+    // Chatwoot at chat.huismax.com: the huismax.com website inbox's token (public; it's in every page that has the widget).
+    // Empty: the chat buttons lead to /reply instead.
+    "CHATWOOT_WEBSITE_TOKEN": "3HoEMad442t9XMCqdwpUjk3W",
     // Public by design (it appears in the Spotify login URL). The client SECRET is never here:
     // it stays a Secret in the Cloudflare dashboard.
     "SPOTIFY_CLIENT_ID": "e0ea0ee972a640e88f0aac83e2acb846"

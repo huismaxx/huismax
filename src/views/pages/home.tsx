@@ -78,7 +78,7 @@ export const Home = ({ live, presence, spotifyConnected, settings, identities, p
             <div class="home-actions">
               <button type="button" class="home-chat" data-chat-open aria-haspopup="dialog" aria-expanded="false">
                 <span class="home-chat-dot" aria-hidden="true" />
-                chat with max's ai assistant <span aria-hidden="true">→</span>
+                chat with max <span aria-hidden="true">→</span>
               </button>
               {/* Max's open-source ESP32 project (Muse Companion): the how-to page, which links the source */}
               <a class="home-chat home-perk" href="/muse">

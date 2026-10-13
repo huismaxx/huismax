@@ -11,8 +11,22 @@ const BOARDS = {
 };
 
 const ext = { target: '_blank', rel: 'noopener noreferrer' };
+
+/** Umami events (client/lib/track.ts): the source and the boards; any other link out counts as `outbound`. */
+const tracked = (href: string) => {
+  if (href === REPO) return { 'data-track': 'muse-source' };
+  const board = (Object.keys(BOARDS) as (keyof typeof BOARDS)[]).find((k) => BOARDS[k].url === href);
+  return board ? { 'data-track': 'muse-board', 'data-track-board': board } : {};
+};
+/** Which download button was used: the top one, step 2 or the end. */
+const download = (release: MuseRelease, from: 'top' | 'step' | 'end') => ({
+  'data-track': 'muse-download',
+  'data-track-version': release.version,
+  'data-track-from': from,
+});
+
 const Out = ({ href, children }: { href: string; children: Child }) => (
-  <a class="mu-link" href={href} {...ext}>
+  <a class="mu-link" href={href} {...ext} {...tracked(href)}>
     {children}
     <span aria-hidden="true"> ↗</span>
   </a>
@@ -62,7 +76,7 @@ export const Muse = ({ release }: { release: MuseRelease }) => (
         Windows PC, paste your Muse SDK token, press <b>INSTALL</b>, and Muse Companion does the rest.
       </p>
       <div class="mu-cta">
-        <a class="mu-download" href={release.url}>
+        <a class="mu-download" href={release.url} {...download(release, 'top')}>
           <span>download Muse Companion</span>
           <span class="mono">v{release.version} · Windows</span>
         </a>
@@ -197,7 +211,7 @@ export const Muse = ({ release }: { release: MuseRelease }) => (
 
         <Step n={2} title="Install Muse Companion">
           <p>
-            <a class="mu-link" href={release.url}>
+            <a class="mu-link" href={release.url} {...download(release, 'step')}>
               Download the installer
             </a>{' '}
             (2.4 MB) and run it. It fetches the app (about 24 MB), installs it, and opens it. No Python or ESP-IDF needed. It asks for
@@ -407,7 +421,7 @@ export const Muse = ({ release }: { release: MuseRelease }) => (
       <h2 class="mu-h2">Ready?</h2>
       <p class="mu-lead">Pick a board, get your token, plug it in, press INSTALL. Your Muse gadget is a few minutes away.</p>
       <div class="mu-cta">
-        <a class="mu-download" href={release.url}>
+        <a class="mu-download" href={release.url} {...download(release, 'end')}>
           <span>download Muse Companion</span>
           <span class="mono">v{release.version} · Windows</span>
         </a>

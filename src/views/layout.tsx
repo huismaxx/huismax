@@ -15,8 +15,18 @@ type Props = {
   description?: string;
   live: LiveStatus;
   site: Site;
+  /** Umami website ID (UMAMI_WEBSITE_ID). Unset: no analytics script at all. */
+  analytics?: string;
+  /** Chatwoot website token (CHATWOOT_WEBSITE_TOKEN). Set: the chat buttons open Chatwoot; unset: they lead to /reply. */
+  support?: string;
   children: Child;
 };
+
+// stats.js is the same tracker as script.js, under a name ad blockers don't list
+const UMAMI_SCRIPT = 'https://analytics.huismax.com/stats.js';
+// A UUID or nothing: the ID goes into the page as an attribute.
+const UMAMI_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const CHATWOOT_TOKEN = /^[A-Za-z0-9]{12,64}$/;
 
 // Runs before paint so the stored theme never flashes.
 // Also marks the page as scripted, so the homepage headline can wait for its typewriter instead of flashing.
@@ -24,7 +34,7 @@ const themeBoot = `document.documentElement.classList.add('js');try{var t=localS
 
 const json = (v: unknown) => raw(JSON.stringify(v).replace(/</g, '\\u003c'));
 
-export const Layout = ({ page, title, description, live, site, children }: Props) => {
+export const Layout = ({ page, title, description, live, site, analytics, support, children }: Props) => {
   const s = site.settings;
   const fullTitle = title ? `${title} — huismax` : 'huismax';
   const desc = description || s.description || s.headline;
@@ -49,6 +59,8 @@ export const Layout = ({ page, title, description, live, site, children }: Props
         <link rel="stylesheet" href={assets.css} />
         <script>{raw(themeBoot)}</script>
         <script type="module" src={assets.js} />
+        {/* Umami: deferred, cookieless, only counted on huismax.com (not local dev). A blocked script changes nothing. */}
+        {analytics && UMAMI_ID.test(analytics) && <script defer src={UMAMI_SCRIPT} data-website-id={analytics} data-domains="huismax.com" />}
       </head>
       <body data-page={page}>
         <a class="skip" href="#main">skip to content</a>
@@ -70,7 +82,7 @@ export const Layout = ({ page, title, description, live, site, children }: Props
               </a>
             )}
             <button class="menu-btn chat-btn" type="button" data-chat-open aria-haspopup="dialog" aria-expanded="false">
-              <span class="chat-btn-long">live </span>chat
+              chat
             </button>
             <button class="menu-btn" type="button" data-menu-open aria-haspopup="dialog">
               menu
@@ -101,6 +113,7 @@ export const Layout = ({ page, title, description, live, site, children }: Props
         <div class="sr-only" aria-live="polite" data-route-announcer />
         <script type="application/json" id="site-nav">{json(clientNav)}</script>
         {/* the label only ever says LIVE: "off air" is never shown on the public site */}
+        {support && CHATWOOT_TOKEN.test(support) && <script type="application/json" id="chat-config">{json({ chatwoot: support })}</script>}
         <script type="application/json" id="live-initial">{json({ ...live, label: live.isLive ? 'LIVE' : '' })}</script>
       </body>
     </html>

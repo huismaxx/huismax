@@ -218,7 +218,7 @@ a.project-item:hover { padding-left: 6px; }
 }
 .presence-profile:hover, .presence-profile:focus-visible { background: var(--fg); border-color: var(--fg); color: var(--bg); }
 
-/* top of the homepage: opens the live chat with Max's AI assistant */
+/* top of the homepage: opens the chat with Max (Chatwoot) */
 .home-chat {
   display: flex;
   width: fit-content;

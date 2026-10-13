@@ -22,15 +22,16 @@ export type Env = {
   REPLY_TO?: string;
   /** Resend sender, e.g. `Max <noreply@huismax.com>` (domain verified in Resend); /admin can override it */
   EMAIL_FROM?: string;
-  /** Live chat: the bridge on Max's server, through the Cloudflare Tunnel (https://…/chat), and the secret it expects. */
-  CHAT_BRIDGE_URL?: string;
-  CHAT_BRIDGE_SECRET?: string;
   /** The radio (Icecast): the stream browsers play, and its status-json.xsl (default: next to the stream). */
   RADIO_STREAM_URL?: string;
   RADIO_STATUS_URL?: string;
   /** /homelab: the Monitoring API (https; contract in MONITORING_API.md) and its bearer token (secret). Unset: demo data. */
   MONITORING_API_URL?: string;
   MONITORING_API_TOKEN?: string;
+  /** Umami website ID (public, a UUID) from analytics.huismax.com. Unset: no analytics on the pages. */
+  UMAMI_WEBSITE_ID?: string;
+  /** Chatwoot (chat.huismax.com) website inbox token, public. Set: the site's chat buttons open Chatwoot. */
+  CHATWOOT_WEBSITE_TOKEN?: string;
   /** Test overrides; leave unset in production. */
   SPOTIFY_ACCOUNTS_BASE?: string;
   SPOTIFY_API_BASE?: string;
