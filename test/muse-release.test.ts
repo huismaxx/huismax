@@ -28,19 +28,24 @@ test('muse: latest.json is read the way Muse Companion writes it', () => {
 });
 
 test('muse: the page offers the new version once its installer is there', async () => {
-  stub(json('0.4.7', [server('0.4.7'), github('0.4.7')]), [server('0.4.7')]);
-  assert.deepEqual(await museRelease(), { version: '0.4.7', url: server('0.4.7') });
+  stub(json('0.5.0', [server('0.5.0'), github('0.5.0')]), [server('0.5.0')]);
+  assert.deepEqual(await museRelease(), { version: '0.5.0', url: server('0.5.0') });
+});
+
+test('muse: latest.json with a byte order mark, as PowerShell writes it', async () => {
+  stub('\uFEFF' + JSON.stringify(json('0.5.0', [server('0.5.0')])), [server('0.5.0')]);
+  assert.deepEqual(await museRelease(), { version: '0.5.0', url: server('0.5.0') });
 });
 
 test("muse: latest.json ahead of its files keeps the last published version", async () => {
-  const asked = stub(json('0.4.7', [server('0.4.7'), github('0.4.7')]), []);
+  const asked = stub(json('0.5.0', [server('0.5.0'), github('0.5.0')]), []);
   assert.deepEqual(await museRelease(), FALLBACK);
-  assert.ok(asked.includes(`HEAD ${server('0.4.7')}`) && asked.includes(`HEAD ${github('0.4.7')}`), 'both addresses tried');
+  assert.ok(asked.includes(`HEAD ${server('0.5.0')}`) && asked.includes(`HEAD ${github('0.5.0')}`), 'both addresses tried');
 });
 
 test('muse: only on GitHub so far: the GitHub link', async () => {
-  stub(json('0.4.8', [server('0.4.8'), github('0.4.8')]), [github('0.4.8')]);
-  assert.deepEqual(await museRelease(), { version: '0.4.8', url: github('0.4.8') });
+  stub(json('0.5.1', [server('0.5.1'), github('0.5.1')]), [github('0.5.1')]);
+  assert.deepEqual(await museRelease(), { version: '0.5.1', url: github('0.5.1') });
 });
 
 test('muse: no latest.json, a broken one, or an older version: the last published version', async () => {

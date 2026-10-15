@@ -8,7 +8,7 @@
 
 const LATEST = 'https://download.huismax.com/latest.json';
 /** Last release known to be published, for when latest.json is missing, unreadable or ahead of its files. */
-export const FALLBACK: MuseRelease = { version: '0.4.6', url: 'https://download.huismax.com/MuseCompanion-Setup-0.4.6.exe' };
+export const FALLBACK: MuseRelease = { version: '0.4.9', url: 'https://download.huismax.com/MuseCompanion-Setup-0.4.9.exe' };
 const TIMEOUT = 3000;
 const TTL = 300;
 
@@ -48,7 +48,8 @@ async function load(): Promise<MuseRelease> {
   try {
     const res = await fetch(LATEST, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(TIMEOUT) });
     if (!res.ok) throw new Error(`answered ${res.status}`);
-    const latest = parseLatest(await res.json());
+    // Muse Companion's release script (PowerShell) writes latest.json with a UTF-8 BOM, which res.json() rejects.
+    const latest = parseLatest(JSON.parse((await res.text()).replace(/^\uFEFF/, '')));
     if (!latest) throw new Error('not a Muse Companion latest.json');
     if (!newer(latest.version, FALLBACK.version) && latest.version !== FALLBACK.version) return FALLBACK;
     for (const url of latest.urls) if (await exists(url)) return { version: latest.version, url };
