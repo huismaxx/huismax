@@ -78,7 +78,7 @@ Rules (enforced by `test/boundaries.test.ts`):
 
 1. **`src/lib` never imports `src/views` or `src/index.tsx`.** Services don't know about pages.
 2. **`src/views` import `src/lib` for types only**, plus a short allowlist of pure constants (`STATUS_PRESETS`,
-   `MAX_NAME`, `MAX_REQUEST`, `RANGES`). Views never fetch, read KV or D1, or call a service. Everything they show
+   `MAX_NAME`, `MAX_REQUEST`, `RANGES`, ideas `CATEGORIES`). Views never fetch, read KV or D1, or call a service. Everything they show
    comes in through props.
 3. **`client/*` never imports `src/*` at runtime.** It may use `import type` from the server contract files listed in
    the test (today only `src/lib/homelab-types.ts`). Anything else crosses the wire as JSON (see CONTRACTS.md).

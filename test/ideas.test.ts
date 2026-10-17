@@ -118,9 +118,9 @@ test('/start: static copy, src query retained, unreleased sections hidden, no ch
  assert.equal(res.status,200);
  const html = await res.text();
  assert.match(html,/<h1>Hello. Let&#39;s set up your companion/);
- assert.match(html,/<ul><li><strong>A Windows PC/);
+ assert.match(html,/needs a Windows PC that stays on/);
  assert.match(html,/USB-C cable from the box/);
- assert.doesNotMatch(html,/Download your companion|start\/firmware|offline voice|chat-config|when available/);
+ assert.doesNotMatch(html,/Download your companion|start\/firmware|offline voice|chat-config|when available|verify before|Claude/);
  const home = await (await app.request('https://huismax.com/',{},env,ctx)).text();
  assert.doesNotMatch(home,/href="\/ideas"/);
 });

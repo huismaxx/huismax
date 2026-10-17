@@ -129,7 +129,7 @@ views/layout.tsx ─▶ generated/assets, views/components/*
 | from ↓ / to → | `src/lib` | `src/views` | `src/index.tsx` | `client/lib` | `client/pages` | `client/admin` | `bridge` |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `src/index.tsx` | ✅ | ✅ | — | ❌ | ❌ | ❌ | ❌ |
-| `src/views` | ⚠️ types + `STATUS_PRESETS`, `MAX_NAME`, `MAX_REQUEST`, `RANGES` | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| `src/views` | ⚠️ types + `STATUS_PRESETS`, `MAX_NAME`, `MAX_REQUEST`, `RANGES`, `CATEGORIES` | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `src/lib` | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `client/main.ts` | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
 | `client/pages` | ⚠️ `import type` from `homelab-types.ts` | ❌ | ❌ | ✅ | ✅ | ⚠️ only `admin/h.ts` (to move in Phase 2) | ❌ |
