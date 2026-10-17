@@ -1,3 +1,6 @@
+import { Start } from './views/pages/start';
+import { Ideas } from './views/pages/ideas';
+import { validateIdea, listIdeas, saveIdea, emailIdea, type Idea } from './lib/ideas';
 import { Hono, type Context } from 'hono';
 import type { Child } from 'hono/jsx';
 import type { Env } from './lib/env';
@@ -63,7 +66,7 @@ async function page(c: C, key: PageKey, title: string | undefined, body: (live: 
   if (cmsKey && !s.settings.pages[cmsKey] && !(await isAdmin(c))) return notFound(c);
   const description = (cmsKey && s.settings.intros[cmsKey]) || s.settings.description;
   return c.html(
-    <Layout page={key} title={title} description={description} live={live} site={s} analytics={c.env.UMAMI_WEBSITE_ID?.trim()} inbox={c.env.CHATWOOT_INBOX_ID?.trim()}>
+    <Layout page={key} title={title} description={description} live={live} site={s} analytics={c.env.UMAMI_WEBSITE_ID?.trim()} inbox={key === 'start' ? undefined : c.env.CHATWOOT_INBOX_ID?.trim()}>
       {await body(live, s)}
     </Layout>,
     status,
@@ -143,6 +146,8 @@ app.get('/muse', async (c) => {
   const release = await museRelease();
   return page(c, 'muse', 'Build your own Muse gadget', () => <Muse release={release} />);
 });
+app.get('/start', c => page(c, 'start', 'Set up your companion', () => <Start />));
+app.get('/ideas', async c => { await ensureDb(c.env); const ideas = await listIdeas(c.env); c.header('Cache-Control','no-store'); return page(c, 'ideas', 'Make your companion better', () => <Ideas ideas={ideas} ready={!!c.env.DB} />); });
 app.get('/404', (c) => notFound(c));
 
 const notFound = (c: C): Promise<Response> => page(c, 'not-found', '404', () => <NotFound path={c.req.path} />, 404);
@@ -191,6 +196,24 @@ app.post('/api/reply', async (c) => {
   const saved = await saveMessage(c.env, m);
   c.executionCtx.waitUntil(emailMessage(c.env, s, saved));
   return c.json({ ok: true });
+});
+
+app.post('/api/ideas', async c => {
+ if (!sameOrigin(c)) return c.json({error:'bad origin'},403);
+ if (!c.env.DB) return c.json({error:'Ideas are offline right now.'},503);
+ const b = await c.req.json<Record<string,unknown>>().catch(() => null);
+ if (!b) return c.json({error:'invalid json'},400);
+ if (b.website) return c.json({ok:true, dropped:true});
+ let idea;
+ try { idea = validateIdea(b); } catch(e) { return c.json({error:(e as Error).message},400); }
+ await ensureDb(c.env);
+ const cap = await c.env.DB.prepare('SELECT COUNT(*) AS n FROM ideas WHERE created_at > ?').bind(new Date(Date.now()-3600000).toISOString()).first<{n:number}>();
+ if ((cap?.n ?? 0) >= 20) return c.json({error:'Too many ideas right now. Please try again later.'},429);
+ const limited = await allowed(c.env,c.req.header('CF-Connecting-IP') ?? 'local',{key:'ideas',perDay:10,noun:'idea'});
+ if (limited) return c.json({error:limited},429);
+ const saved = await saveIdea(c.env,idea);
+ c.executionCtx.waitUntil(emailIdea(c.env,await settings(c.env),saved));
+ return c.json({ok:true});
 });
 
 /* ——— requests for the next live set (public, the form on /dj) ——— */
@@ -532,6 +555,20 @@ app.put('/api/admin/settings', async (c) => {
   } catch (e) {
     return cmsError(c, e);
   }
+});
+
+app.get('/api/admin/ideas', async c => { const denied = await guardDb(c); if (denied) return denied; return c.json(await listIdeas(c.env,true)); });
+app.patch('/api/admin/ideas/:id', async c => {
+ const denied = await guardDb(c); if (denied) return denied;
+ const b = await body(c);
+ if (!b || (typeof b.adopted !== 'boolean' && typeof b.hidden !== 'boolean')) return c.json({error:'Expected adopted or hidden boolean.'},400);
+ const i = await c.env.DB!.prepare('SELECT * FROM ideas WHERE id = ?').bind(c.req.param('id')).first<Idea>();
+ if (!i) return c.json({error:'not found'},404);
+ const adopted = typeof b.adopted === 'boolean' ? Number(b.adopted) : i.adopted;
+ const hidden = typeof b.hidden === 'boolean' ? Number(b.hidden) : i.hidden;
+ await c.env.DB!.prepare('UPDATE ideas SET adopted = ?, hidden = ? WHERE id = ?').bind(adopted,hidden,i.id).run();
+ const emailed = adopted && !i.winner_emailed ? await emailIdea(c.env,await settings(c.env),{...i,adopted},true) : !!i.winner_emailed;
+ return c.json({ok:true, winnerEmailed:emailed});
 });
 
 app.get('/api/admin/messages', async (c) => {

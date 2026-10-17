@@ -64,7 +64,7 @@ const spotifyNotice: Record<string, string> = {
   cancelled: 'cancelled.',
 };
 
-const SECTIONS = ['status', 'home', 'music', 'photography', 'hiking', 'now', 'dj', 'homelab', 'reply', 'site'] as const;
+const SECTIONS = ['status', 'home', 'music', 'photography', 'hiking', 'now', 'dj', 'homelab', 'reply', 'ideas', 'site'] as const;
 type SectionKey = (typeof SECTIONS)[number];
 
 /** Public page each section edits, and the settings key that can hide it. */
@@ -408,6 +408,7 @@ export const Admin = ({ live, radio, presence, kv, spotify, monitoring, data, db
           {s && <Coll name="tools" label="open tools" note="homepage tools_: services anyone can use without an account, with a live up/down check. never add an admin or login page here." />}
         </Section>
 
+        <Section id="ideas"><section class="panel" data-admin-ideas><button type="button" class="a-btn" data-ideas-refresh>refresh ideas</button><p role="status" data-ideas-state /><div data-admin-ideas-list /></section></Section>
         <Section id="reply" settings={s}>
           {!s || !data ? (
             <NoDb error={dbError} />

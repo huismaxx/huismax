@@ -1,0 +1,11 @@
+.companion-page { max-width: 720px; margin-inline: auto; overflow-wrap: anywhere; }
+.companion-page h1 { font-size: clamp(36px, 7vw, 64px); line-height: 1.08; margin-bottom: 28px; }
+.companion-page h2 { font-size: clamp(24px, 4vw, 32px); margin: 36px 0 16px; }
+.companion-page p, .companion-page li { line-height: 1.65; margin-bottom: 16px; }
+.companion-page ul, .companion-page ol { padding-left: 24px; }
+.companion-page a { text-decoration: underline; }
+.companion-page select { color: var(--fg); background: var(--bg); font: inherit; padding: 12px; max-width: 100%; }
+.companion-page .idea-consent input { width: auto; min-height: auto; margin-right: 8px; }
+.idea-entry { border-top: 1px solid var(--line); padding-block: 24px; }
+.idea-description { white-space: pre-wrap; }
+.idea-badge { font: 500 14px var(--font-mono); border: 1px solid currentColor; padding: 4px 8px; }

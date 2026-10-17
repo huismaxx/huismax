@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS ideas (
+ id TEXT PRIMARY KEY, handle TEXT NOT NULL, email TEXT NOT NULL, country TEXT NOT NULL,
+ category TEXT NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, link TEXT NOT NULL DEFAULT '',
+ adopted INTEGER NOT NULL DEFAULT 0, hidden INTEGER NOT NULL DEFAULT 0,
+ emailed INTEGER NOT NULL DEFAULT 0, winner_emailed INTEGER NOT NULL DEFAULT 0,
+ created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ideas_public_newest ON ideas(hidden, created_at DESC);

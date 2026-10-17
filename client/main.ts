@@ -14,6 +14,7 @@ import { initAlbum } from './pages/album';
 import { initDJ } from './pages/dj';
 import { initCoder } from './pages/coder';
 import { initMusic } from './pages/music';
+import { initIdeas } from './pages/ideas';
 import { initReply } from './pages/reply';
 import { initNotFound } from './pages/notfound';
 import { initHomelab } from './pages/homelab';
@@ -28,6 +29,7 @@ const pages: Record<string, PageInit> = {
   'vibe-coder': initCoder,
   music: initMusic,
   reply: initReply,
+  ideas: initIdeas,
   homelab: initHomelab,
   'not-found': initNotFound,
 };

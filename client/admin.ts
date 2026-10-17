@@ -6,6 +6,7 @@ import { Collection, type CollOpts } from './admin/collection';
 import { photoManager } from './admin/photos';
 import { coverEditor } from './admin/dj';
 import { settingsForms } from './admin/settings';
+import { ideasAdmin } from './admin/ideas';
 import { inbox } from './admin/inbox';
 import { paint } from './admin/state';
 import { h, pad3 } from './admin/h';
@@ -17,6 +18,8 @@ proximity(document, scope, 90);
 function init(main: HTMLElement) {
   const initial = readJSON<{ live: Live; presence: Presence; data: AdminData | null }>('admin-initial')!;
   initNav();
+  const ideas = main.querySelector<HTMLElement>('[data-admin-ideas]');
+  if (ideas) ideasAdmin(ideas);
   const status = initStatus(main, initial);
   if (initial.data) cms(main, initial.data);
 

@@ -123,6 +123,26 @@ Synced lyrics come from [LRCLIB](https://lrclib.net), which is free and needs no
 
 The sender is the `EMAIL_FROM` variable (e.g. `Max <noreply@huismax.com>`, on a domain verified in Resend), or the one set in `/admin`. Without either, Resend's test sender `onboarding@resend.dev` is used, which only delivers to the email of your Resend account. Visitors are rate limited (one a minute, ten a day, keyed by a hash of the IP) and a hidden honeypot field drops bots.
 
+## Companion setup and ideas
+
+`/start` serves the retail setup copy without requiring JavaScript. Unreleased download,
+firmware restore and offline voice sections are omitted. NFC and QR links keep `?src=nfc`
+and `?src=qr` for Umami's normal page views; there is no extra source event.
+
+`/ideas` is intentionally absent from navigation and the command palette until the brand
+is chosen. All accepted submissions appear immediately, newest first; email and country
+stay private. Migration `0008_ideas.sql` is registered with the existing automatic migration
+runner. The form uses the same origin checks, honeypot and IP-hash KV rate limiting as
+`/reply` (one a minute, ten a day), plus a site-wide cap of twenty ideas per hour.
+`idea-sent` fires only after a successful stored submission and carries no content.
+
+In `/admin` → ideas, Max can adopt or hide an entry. Adoption sends a winner email using
+the existing Resend sender and reply destination settings. Failed winner emails can be
+retried there; successfully recorded emails are not sent again when flags change, and
+Resend idempotency keys protect concurrent retries. Submission notifications are capped
+at forty per day; entries remain stored when notification email fails or is unconfigured.
+The permanently open US-only rules and USD 89 device prize are shown on the page.
+
 ## DJ requests
 
 `/dj` asks "What should I play next live?". Visitors send a track, artist or vibe (200 characters) and an optional name (40). `POST /api/dj/requests` keeps each one in D1 as a draft. `/admin` → dj → requests lists them newest first. Publish the ones you pick and they show on /dj under "on the list" (the newest 20). Delete the rest.

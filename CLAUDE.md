@@ -46,6 +46,7 @@ Status: **live once merged.** Website ID `40d0a0b8-a849-4f29-b66e-85cfb3b35e92` 
 | `muse-download` {version, from: top/step/end} | /muse download links | The main product conversion, and which button works |
 | `muse-source` | /muse GitHub links | Interest from developers |
 | `muse-board` {board} | /muse Amazon board links | Which hardware people buy |
+| `idea-sent` | /ideas, on success only | Idea submissions; no content |
 | `reply-sent` | /reply, on success only | Contact conversion |
 | `dj-request-sent` | /dj, on success only | Engagement with the channel |
 | `chat-start` | homepage chat_, a visitor's first message | Conversations started from the site (the messages themselves are counted in Chatwoot) |

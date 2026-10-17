@@ -5,6 +5,7 @@ import m0003 from '../../migrations/0003_services.sql';
 import m0004 from '../../migrations/0004_services_erpnext.sql';
 import m0005 from '../../migrations/0005_projects_muse.sql';
 import m0006 from '../../migrations/0006_tools.sql';
+import m0008 from '../../migrations/0008_ideas.sql';
 import m0007 from '../../migrations/0007_tools_more.sql';
 
 /**
@@ -20,6 +21,7 @@ const MIGRATIONS: [name: string, sql: string][] = [
   ['0005_projects_muse.sql', m0005],
   ['0006_tools.sql', m0006],
   ['0007_tools_more.sql', m0007],
+  ['0008_ideas.sql', m0008],
 ];
 
 let done = false;

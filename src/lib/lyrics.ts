@@ -80,7 +80,7 @@ const plainLines = (text: string): Line[] =>
 
 /* ——— matching ——— */
 
-/** Case, accents and punctuation don't matter: "Beyoncé" = "beyonce", "AC/DC" = "ac dc", "晴天" stays "晴天". */
+/** Case, accents and punctuation don't matter: "Beyoncé" = "beyonce", "AC/DC" = "ac dc"; non-Latin letters are preserved. */
 export const norm = (s: string) =>
   s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 

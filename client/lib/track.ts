@@ -18,6 +18,7 @@ export type TrackEvent =
   | 'muse-download' // { version, from }
   | 'muse-source'
   | 'muse-board' // { board }
+  | 'idea-sent'
   | 'reply-sent'
   | 'dj-request-sent'
   | 'chat-start' // a visitor's first message
