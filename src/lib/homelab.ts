@@ -511,8 +511,6 @@ const DEMO: DemoBox[] = [
       { name: 'mirotalk', image: 'mirotalk/sfu:latest', days: 5, mem: 410 * MiB },
       { name: 'erpnext', image: 'frappe/erpnext:v15', days: 5, mem: 1.4 * GiB },
       { name: 'erpnext-db', image: 'mariadb:10.6', days: 5, mem: 520 * MiB },
-      { name: 'odoo', image: 'odoo:17', days: 5, mem: 780 * MiB },
-      { name: 'odoo-db', image: 'postgres:15', days: 5, mem: 260 * MiB },
       { name: 'grafana', image: 'grafana/grafana:11.2.0', days: 2, mem: 120 * MiB },
       { name: 'prometheus', image: 'prom/prometheus:v2.54.1', days: 5, mem: 690 * MiB },
       { name: 'node-exporter', image: 'prom/node-exporter:v1.8.2', days: 5, mem: 18 * MiB },
